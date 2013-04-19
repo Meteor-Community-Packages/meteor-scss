@@ -1,0 +1,28 @@
+{
+  "dependencies": {
+    "node-sass": {
+      "version": "0.4.1",
+      "from": "node-sass@0.4.1",
+      "dependencies": {
+        "mkdirp": {
+          "version": "0.3.5",
+          "from": "mkdirp@0.3.x"
+        },
+        "colors": {
+          "version": "0.6.0-1",
+          "from": "colors@0.6.0-1"
+        },
+        "optimist": {
+          "version": "0.3.7",
+          "from": "optimist@0.3.x",
+          "dependencies": {
+            "wordwrap": {
+              "version": "0.0.2",
+              "from": "wordwrap@~0.0.2"
+            }
+          }
+        }
+      }
+    }
+  }
+}
