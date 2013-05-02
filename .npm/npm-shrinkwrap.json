@@ -1,8 +1,9 @@
 {
   "dependencies": {
     "node-sass": {
-      "version": "0.4.1",
-      "from": "node-sass@0.4.1",
+      "version": "0.4.4",
+      "from": "node-sass@0.4.4",
+      "resolved": "https://registry.npmjs.org/node-sass/-/node-sass-0.4.4.tgz",
       "dependencies": {
         "mkdirp": {
           "version": "0.3.5",
@@ -13,8 +14,9 @@
           "from": "colors@0.6.0-1"
         },
         "optimist": {
-          "version": "0.3.7",
-          "from": "optimist@0.3.x",
+          "version": "0.4.0",
+          "from": "optimist@0.4.x",
+          "resolved": "https://registry.npmjs.org/optimist/-/optimist-0.4.0.tgz",
           "dependencies": {
             "wordwrap": {
               "version": "0.0.2",

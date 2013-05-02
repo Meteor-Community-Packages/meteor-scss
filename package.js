@@ -2,13 +2,12 @@ Package.describe({
   summary: "Style with attitude."
 });
 
-Npm.depends({'node-sass': '0.4.1'});
+Npm.depends({'node-sass': '0.4.4'});
+var sass = Npm.require('node-sass');
+var fs = Npm.require('fs');
+var path = Npm.require('path');
 
 var scss_handler = function (bundle, source_path, serve_path, where) {
-  var sass = Npm.require('node-sass');
-  var fs = Npm.require('fs');
-  var path = Npm.require('path');
-  var Future = Npm.require(path.join('fibers', 'future'));
 
   serve_path = serve_path + '.css';
 
@@ -16,29 +15,17 @@ var scss_handler = function (bundle, source_path, serve_path, where) {
     sync: true,
     includePaths: [path.resolve(source_path, '..')] // for @import
   };
-  var future = new Future();
-
-  var render_callback = function (err, css) {
-    if (err) {
-      future.return();
-      return bundle.error(source_path + ": Sass compiler error: " + err.message);
-    }
-
-    var buffered_css = new Buffer(css);
-    bundle.add_resource({
-      type: "css",
-      path: serve_path,
-      data: buffered_css,
-      where: where
-    });
-    future.return();
-  };
 
   var contents = fs.readFileSync(source_path, 'utf8');
 
   try {
-    sass.render(contents.toString('utf8'), render_callback, options);
-    return future.wait();
+    var css = sass.renderSync(contents.toString('utf8'), options);
+    bundle.add_resource({
+      type: "css",
+      path: serve_path,
+      data: new Buffer(css),
+      where: where
+    });
   } catch (e) {
     // sass.render() is supposed to report any errors via its
     // callback. But sometimes, it throws them instead. This is
