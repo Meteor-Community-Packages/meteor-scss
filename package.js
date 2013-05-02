@@ -8,11 +8,12 @@ var fs = Npm.require('fs');
 var path = Npm.require('path');
 
 var scss_handler = function (bundle, source_path, serve_path, where) {
+  // Return if it's a partial, we don't want to output those as css files.
+  if (path.basename(source_path)[0] === '_') return;
 
   serve_path = serve_path + '.css';
 
   var options = {
-    sync: true,
     includePaths: [path.resolve(source_path, '..')] // for @import
   };
 
@@ -37,7 +38,7 @@ var scss_handler = function (bundle, source_path, serve_path, where) {
 
 Package.register_extension("scss", scss_handler);
 
-// Register sassimport files with the dependency watcher, without actually
+// Register scssimport files with the dependency watcher, without actually
 // processing them.
 Package.register_extension("scssimport", function () {});
 
