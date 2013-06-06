@@ -2,7 +2,7 @@ Package.describe({
   summary: "Style with attitude."
 });
 
-Npm.depends({'node-sass': '0.4.4'});
+Npm.depends({'node-sass': '0.5.1'});
 
 var scss_handler = function (bundle, source_path, serve_path, where) {
   var path = Npm.require('path');
