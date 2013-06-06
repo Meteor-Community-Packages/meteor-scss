@@ -1,9 +1,9 @@
 {
   "dependencies": {
     "node-sass": {
-      "version": "0.4.4",
-      "from": "node-sass@0.4.4",
-      "resolved": "https://registry.npmjs.org/node-sass/-/node-sass-0.4.4.tgz",
+      "version": "0.5.1",
+      "from": "node-sass@0.5.1",
+      "resolved": "https://registry.npmjs.org/node-sass/-/node-sass-0.5.1.tgz",
       "dependencies": {
         "mkdirp": {
           "version": "0.3.5",
