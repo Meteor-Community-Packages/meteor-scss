@@ -13,14 +13,15 @@ var scss_handler = function (bundle, source_path, serve_path, where) {
 
   serve_path = serve_path + '.css';
 
+  var contents = fs.readFileSync(source_path, 'utf8');
+
   var options = {
+    data: contents.toString('utf8'),
     includePaths: [path.resolve(source_path, '..')] // for @import
   };
 
-  var contents = fs.readFileSync(source_path, 'utf8');
-
   try {
-    var css = sass.renderSync(contents.toString('utf8'), options);
+    var css = sass.renderSync(options);
     bundle.add_resource({
       type: "css",
       path: serve_path,
