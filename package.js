@@ -2,21 +2,19 @@ Package.describe({
   summary: "Style with attitude."
 });
 
-Npm.depends({'node-sass': '0.5.1'});
+Npm.depends({'node-sass': '0.5.3'});
 
 var scss_handler = function (bundle, source_path, serve_path, where) {
   var path = Npm.require('path');
   // Return if it's a partial, we don't want to output those as css files.
   if (path.basename(source_path)[0] === '_') return;
-  var fs = Npm.require('fs');
   var sass = Npm.require('node-sass');
 
   serve_path = serve_path + '.css';
 
-  var contents = fs.readFileSync(source_path, 'utf8');
-
   var options = {
-    data: contents.toString('utf8'),
+    file: source_path,
+    sourceComments: 'map',
     includePaths: [path.resolve(source_path, '..')] // for @import
   };
 
