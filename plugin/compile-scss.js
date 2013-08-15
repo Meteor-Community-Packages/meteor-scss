@@ -1,6 +1,5 @@
 var path = Npm.require('path');
 var sass = Npm.require('node-sass');
-var Future = Npm.require('fibers/future');
 
 Plugin.registerSourceHandler("scss", function (compileStep) {
   // Return if it's a partial, we don't want to output those as css files.
