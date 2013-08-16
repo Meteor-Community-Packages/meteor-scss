@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 var spawn = require('child_process').spawn;
 
-var meteor = spawn('./meteor/meteor', ['test-packages', '--driver-package', 'test-in-console', '-p', 10012, './']);
+var meteor = spawn('./meteor/meteor', ['test-packages', '--driver-package', 'test-in-console', '-p', 10012, './'], {stdio: 'inherit'});
 meteor.stdout.pipe(process.stdout);
 meteor.stderr.pipe(process.stderr);
 
@@ -11,7 +11,7 @@ meteor.stdout.on('data', function startTesting(data) {
     console.log('starting testing...');
     meteor.stdout.removeListener('data', startTesting);
     runTestSuite();
-  } 
+  }
 });
 
 function runTestSuite() {
