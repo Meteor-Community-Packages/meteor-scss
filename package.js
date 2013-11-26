@@ -8,7 +8,7 @@ Package._transitional_registerBuildPlugin({
   sources: [
     'plugin/compile-scss.js'
   ],
-  npmDependencies: {"node-sass": "0.6.4"}
+  npmDependencies: {"node-sass": "0.7.0"}
 });
 
 Package.on_test(function (api) {
