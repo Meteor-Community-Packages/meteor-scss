@@ -14,7 +14,7 @@ Plugin.registerSourceHandler("scss", function (compileStep) {
   }
 
   var options = {
-    file: compileStep.inputPath,
+    file: compileStep._fullInputPath,
     sourceComments: 'map',
     includePaths: [path.dirname(compileStep._fullInputPath)] // for @import
   };
