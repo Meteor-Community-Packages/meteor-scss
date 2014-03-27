@@ -13,6 +13,6 @@ Package._transitional_registerBuildPlugin({
 
 Package.on_test(function (api) {
   api.use(['test-helpers', 'tinytest']);
-  api.use(['spark']);
+  api.use(['ui']);
   api.add_files(['scss_tests.scss', 'scss_tests.js'], 'client');
 });
