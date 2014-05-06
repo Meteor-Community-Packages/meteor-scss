@@ -27,7 +27,7 @@ Plugin.registerSourceHandler("scss", function (compileStep) {
     // callback. But sometimes, it throws them instead. This is
     // probably a bug in less. Be prepared for either behavior.
     compileStep.error({
-      message: "Scss compiler error: " + e.message,
+      message: "Scss compiler error: " + e.message + "\n" + e,
       sourcePath: e.filename || compileStep.inputPath,
       line: e.line - 1,  // dunno why, but it matches
       column: e.column + 1
