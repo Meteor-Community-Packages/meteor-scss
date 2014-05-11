@@ -1,22 +1,19 @@
 {
   "dependencies": {
     "node-sass": {
-      "version": "0.7.0",
+      "version": "0.8.4",
       "dependencies": {
         "mkdirp": {
           "version": "0.3.5"
         },
-        "colors": {
-          "version": "0.6.0-1"
-        },
         "optimist": {
-          "version": "0.6.0",
+          "version": "0.6.1",
           "dependencies": {
             "wordwrap": {
               "version": "0.0.2"
             },
             "minimist": {
-              "version": "0.0.5"
+              "version": "0.0.8"
             }
           }
         },
@@ -50,7 +47,7 @@
               "version": "3.2.3",
               "dependencies": {
                 "minimatch": {
-                  "version": "0.2.12",
+                  "version": "0.2.14",
                   "dependencies": {
                     "lru-cache": {
                       "version": "2.5.0"
@@ -61,7 +58,7 @@
                   }
                 },
                 "graceful-fs": {
-                  "version": "2.0.1"
+                  "version": "2.0.3"
                 },
                 "inherits": {
                   "version": "2.0.1"
@@ -69,6 +66,20 @@
               }
             }
           }
+        },
+        "chalk": {
+          "version": "0.3.0",
+          "dependencies": {
+            "has-color": {
+              "version": "0.1.4"
+            },
+            "ansi-styles": {
+              "version": "0.2.0"
+            }
+          }
+        },
+        "nan": {
+          "version": "0.6.0"
         }
       }
     }
