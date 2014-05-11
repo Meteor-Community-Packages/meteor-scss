@@ -9,7 +9,7 @@ Package._transitional_registerBuildPlugin({
     'plugin/compile-scss.js'
   ],
   npmDependencies: {
-    'node-sass': '0.8.4',
+    'node-sass': '0.8.6',
     'lodash': '2.4.1'
   }
 });
