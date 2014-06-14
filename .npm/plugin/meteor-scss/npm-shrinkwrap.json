@@ -1,15 +1,8 @@
 {
-  "name": "meteor-scss",
-  "version": "0.0.0",
   "dependencies": {
     "lodash": {
       "version": "2.4.1",
       "from": "lodash@"
-    },
-    "nan": {
-      "version": "1.2.0",
-      "from": "nan@",
-      "resolved": "https://registry.npmjs.org/nan/-/nan-1.2.0.tgz"
     },
     "node-sass": {
       "version": "0.9.2",
