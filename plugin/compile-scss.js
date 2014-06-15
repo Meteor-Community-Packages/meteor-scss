@@ -36,7 +36,7 @@ Plugin.registerSourceHandler("scss", function (compileStep) {
   }
 
   var options = _.extend({}, scssOptions, {
-    sourceComments: 'map'
+    sourceComments: 'none'
   });
 
   options.file = compileStep._fullInputPath;
