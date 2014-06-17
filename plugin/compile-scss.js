@@ -16,7 +16,7 @@ var loadJSONFile = function (filePath) {
   }
 };
 
-Plugin.registerSourceHandler("scss", function (compileStep) {
+var sourceHandler = function(compileStep) {
   // Return if it's a partial, we don't want to output those as css files.
   if (path.basename(compileStep.inputPath)[0] === '_') return;
   // XXX annoying that this is replicated in .css, .less, and .styl
@@ -66,7 +66,10 @@ Plugin.registerSourceHandler("scss", function (compileStep) {
     path: compileStep.inputPath + ".css",
     data: css
   });
-});
+}
+
+Plugin.registerSourceHandler("scss", sourceHandler);
+Plugin.registerSourceHandler("sass", sourceHandler);
 
 Plugin.registerSourceHandler("scssimport", function () {
   // Do nothing
