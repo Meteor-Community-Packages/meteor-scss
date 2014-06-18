@@ -1,0 +1,15 @@
+{
+  "meteor": {},
+  "dependencies": {
+    "basePackages": {
+      "scss": {
+        "path": "."
+      }
+    },
+    "packages": {
+      "scss": {
+        "path": "."
+      }
+    }
+  }
+}
