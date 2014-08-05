@@ -39,7 +39,9 @@ var sourceHandler = function(compileStep) {
     sourceComments: 'none'
   });
 
-  options.file = compileStep._fullInputPath;
+  var sourcePath = compileStep._fullInputPath;
+  var sourceContents = globImports(sourcePath);
+  options.data = sourceContents;
 
   if (!_.isArray(options.includePaths)) {
     options.includePaths = [options.includePaths];
