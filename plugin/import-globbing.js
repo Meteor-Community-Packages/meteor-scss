@@ -76,10 +76,10 @@ var possiblePaths = function (target) {
 }
 
 
-expandGlobs = function (target) {
+expandGlobs = function (target, cwd) {
   var globs = [];
   _.each(possiblePaths(target), function (path) {
-    globs = globs.concat(glob.sync(path));
+    globs = globs.concat(glob.sync(path, {cwd: cwd}));
   });
   if (globs.length === 0){
     // No results found. If the target contains the `*` character,
@@ -103,11 +103,11 @@ expandGlobs = function (target) {
 
 
 // coordinate globbing for a single @import line
-performGlobbing = function (parsedImport) {
+performGlobbing = function (parsedImport, cwd) {
   var target = initializeTarget(parsedImport);
   if (shouldBeGlobbed(target)){
     // insert globbed @import statements in place of original
-    var paths = expandGlobs(target);
+    var paths = expandGlobs(target, cwd);
     var importStatements = _.map(paths, function (path) {
       return  target.start + path + target.end;
     })
@@ -132,6 +132,9 @@ globImports = function (sourcePath) {
   var sourceContents = fs.readFileSync(sourcePath, 'utf8');
   sourceContents = sourceContents || "\n"; // prevent empty string error
 
+  var cwd = /(.*\/)?/.exec(sourcePath);
+  cwd = (cwd && cwd[1]) || '';
+
   // importParser splits any import line into 4 parts. The 2nd and 3rd
   // parts contains the path/filename for globbing (bounded by quotation marks)
   // 1st and 4th parts contain the rest of the line to copy around globbed paths.
@@ -140,7 +143,7 @@ globImports = function (sourcePath) {
   _.each(lines, function (line) {
     var parsedImport = importParser.exec(line);
     if (parsedImport) {
-      result = result + performGlobbing(parsedImport) + '\n';
+      result = result + performGlobbing(parsedImport, cwd) + '\n';
     }
     else{
       // line is not @import; just copy to output
