@@ -20,13 +20,6 @@ var sourceHandler = function(compileStep) {
   // Return if it's a partial, we don't want to output those as css files.
   if (path.basename(compileStep.inputPath)[0] === '_') return;
   // XXX annoying that this is replicated in .css, .less, and .styl
-  if (! compileStep.archMatches('browser')) {
-    // XXX in the future, might be better to emit some kind of a
-    // warning if a stylesheet is included on the server, rather than
-    // silently ignoring it. but that would mean you can't stick .css
-    // at the top level of your app, which is kind of silly.
-    return;
-  }
 
   var optionsFile = path.join(process.cwd(), 'scss.json');
   var scssOptions = {};
@@ -68,8 +61,8 @@ var sourceHandler = function(compileStep) {
   });
 }
 
-Plugin.registerSourceHandler("scss", sourceHandler);
-Plugin.registerSourceHandler("sass", sourceHandler);
+Plugin.registerSourceHandler("scss", {archMatching: 'web'}, sourceHandler);
+Plugin.registerSourceHandler("sass", {archMatching: 'web'}, sourceHandler);
 
 Plugin.registerSourceHandler("scssimport", function () {
   // Do nothing
