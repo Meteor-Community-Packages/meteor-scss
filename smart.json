@@ -1,8 +1,0 @@
-{
-  "name": "scss",
-  "description": "Style with attitude.",
-  "homepage": "https://github.com/fourseven/meteor-scss",
-  "author": "Mathew Hartley  (https://twitter.com/four_seven)",
-  "version": "0.9.4",
-  "git": "https://github.com/fourseven/meteor-scss.git"
-}

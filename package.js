@@ -1,6 +1,7 @@
 Package.describe({
   summary: 'Style with attitude.',
-  version: '0.9.4'
+  version: "0.9.4",
+  git: "https://github.com/fourseven/meteor-scss.git"
 });
 
 Package._transitional_registerBuildPlugin({
