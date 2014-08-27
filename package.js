@@ -1,5 +1,6 @@
 Package.describe({
-  summary: 'Style with attitude.'
+  summary: 'Style with attitude.',
+  version: '0.9.4'
 });
 
 Package._transitional_registerBuildPlugin({
