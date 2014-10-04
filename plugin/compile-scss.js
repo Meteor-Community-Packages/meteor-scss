@@ -2,6 +2,7 @@ var path = Npm.require('path');
 var sass = Npm.require('node-sass');
 var fs = Npm.require('fs');
 var _ = Npm.require('lodash');
+var autoprefixer = Npm.require('autoprefixer-core');
 
 var loadJSONFile = function (filePath) {
   var content = fs.readFileSync(filePath);
@@ -55,6 +56,24 @@ var sourceHandler = function(compileStep) {
     });
     return;
   }
+
+  if (options.enableAutoprefixer
+     || (compileStep.fileOptions && compileStep.fileOptions.isTest)) {
+    var autoprefixerOptions = options.autoprefixerOptions || {};
+
+    try {
+      // Applying Autoprefixer to compiled css
+      var processor = autoprefixer(autoprefixerOptions);
+      css = processor.process(css).css;
+    } catch (e) {
+      compileStep.error({
+        message: "Autoprefixer error: " + e,
+        sourcePath: e.filename || compileStep.inputPath
+      });
+      return;
+    }
+  }
+
   compileStep.addStylesheet({
     path: compileStep.inputPath + ".css",
     data: css

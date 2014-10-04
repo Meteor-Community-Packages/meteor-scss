@@ -13,6 +13,15 @@ Tinytest.add("sass - presence", function(test) {
   // test @import
   test.equal(p.css('border-right-style'), "dotted");
 
-  // test autoprefixer
-  //test.equal(p.css('-webkit-transition'), "-webkit-transform 1s");
+  p.remove();
+});
+
+Tinytest.add("sass - autprefixer presence and function", function(test) {
+  renderToDiv(Template.test_p_tag);
+
+  var p = $('.sass-dashy-left-border-transition');
+
+  test.equal(p.css('-webkit-background-size'), "20px");
+
+  p.remove();
 });
