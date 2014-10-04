@@ -1,14 +1,18 @@
+renderToDiv = function(comp) {
+  var body = document.getElementsByTagName("body")[0];
+  Blaze.render(comp, body);
+}
+
 Tinytest.add("sass - presence", function(test) {
+  renderToDiv(Template.test_p_tag);
 
-  var d = OnscreenDiv(Meteor.render(function() {
-    return '<p class="sass-dashy-left-border"></p>'; }));
-  d.node().style.display = 'block';
+  var p = $('.sass-dashy-left-border-transition');
 
-  var p = d.node().firstChild;
-  test.equal(getStyleProperty(p, 'border-left-style'), "dashed");
+  test.equal(p.css('border-left-style'), "dashed");
 
   // test @import
-  test.equal(getStyleProperty(p, 'border-right-style'), "dotted");
+  test.equal(p.css('border-right-style'), "dotted");
 
-  d.kill();
+  // test autoprefixer
+  //test.equal(p.css('-webkit-transition'), "-webkit-transform 1s");
 });
