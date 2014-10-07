@@ -1,5 +1,29 @@
 {
   "dependencies": {
+    "autoprefixer-core": {
+      "version": "3.1.0",
+      "dependencies": {
+        "caniuse-db": {
+          "version": "1.0.20141001"
+        },
+        "postcss": {
+          "version": "2.2.5",
+          "dependencies": {
+            "source-map": {
+              "version": "0.1.40",
+              "dependencies": {
+                "amdefine": {
+                  "version": "0.1.0"
+                }
+              }
+            },
+            "js-base64": {
+              "version": "2.1.5"
+            }
+          }
+        }
+      }
+    },
     "lodash": {
       "version": "2.4.1"
     },

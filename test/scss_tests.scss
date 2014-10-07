@@ -4,7 +4,9 @@
 
 $dashy: dashed;
 
-.sass-dashy-left-border {
+.sass-dashy-left-border-transition {
   border-left: $dashy;
   border-right: $external-dotty;
+
+  background-size: 20px; // Autoprefix expanded
 }
