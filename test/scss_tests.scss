@@ -8,5 +8,5 @@ $dashy: dashed;
   border-left: $dashy;
   border-right: $external-dotty;
 
-  display: flex; // Autoprefix expanded
+  transition: transform 1s ease 0s; // Autoprefix expanded
 }
