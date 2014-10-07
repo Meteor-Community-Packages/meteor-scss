@@ -13,7 +13,7 @@ This package is configured to find *.scss *.sass files and compile them through 
 Configuration
 -------------
 
-Add a `scss.json` file at the project's root to pass configuration options to node-sass. See [node-sass](https://github.com/andrew/node-sass)'s documentation for a list of options.
+Add a `scss.json` file at the project's root to pass configuration options to node-sass. See [node-sass](https://github.com/sass/node-sass)'s documentation for a list of options.
 
 Example (for using bourbon and neat with meteor-bower):
 
@@ -43,7 +43,11 @@ Autoprefixer example:
 }
 ```
 
+LibSass vs Ruby Sass
+--------------------
+Please not this project uses LibSass. As such some features are not implemented compared to the Ruby version/implementation. Things are improving, so please be patient. Before you ask, I have no intention of making a version of this package that links to the Ruby version instead.
 
-Meteor 0.8.0
-------------
-Please use 0.8.4 or above for meteor 0.8.x, and 0.8.3 for earlier. The API has changed and as such these are the compatible versions.
+
+Heroku
+------
+If you're having problems running this on Heroku please use the cedar-14 stack, by typing the following `heroku stack:set cedar-14` - see [#41](https://github.com/fourseven/meteor-scss/issues/41) for more information.
