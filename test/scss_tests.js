@@ -21,7 +21,7 @@ Tinytest.add("sass - autprefixer presence and function", function(test) {
 
   var p = $('.sass-dashy-left-border-transition');
 
-  test.equal(p.css('-webkit-background-size'), "20px");
+  test.equal(p.css('display'), "-webkit-flex");
 
   p.remove();
 });
