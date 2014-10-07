@@ -5,7 +5,7 @@ Package.describe({
 });
 
 Package._transitional_registerBuildPlugin({
-  name: 'meteor-scss',
+  name: 'fourseven:scss',
   sources: [
     'plugin/compile-scss.js'
   ],
@@ -21,7 +21,7 @@ Package.on_test(function (api) {
            'tinytest',
            'jquery',
            'templating']);
-  api.use(['meteor-scss']);
+  api.use(['fourseven:scss']);
   api.add_files(['test/scss_tests.html', 'test/scss_tests.js'], 'client');
   api.add_files(['test/scss_tests.scss'], 'client',  {isTest:true});
 });
