@@ -45,7 +45,7 @@ Autoprefixer example:
 
 LibSass vs Ruby Sass
 --------------------
-Please not this project uses LibSass. As such some features are not implemented compared to the Ruby version/implementation. Things are improving, so please be patient. Before you ask, I have no intention of making a version of this package that links to the Ruby version instead.
+Please note that this project uses LibSass. As such some features are not implemented compared to the Ruby version/implementation. Things are improving, so please be patient. Before you ask, I have no intention of making a version of this package that links to the Ruby version instead.
 
 
 Heroku
