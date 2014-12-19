@@ -10,7 +10,7 @@ Package._transitional_registerBuildPlugin({
     'plugin/compile-scss.js'
   ],
   npmDependencies: {
-    'node-sass': '1.1.4',
+    'node-sass': '1.2.3',
     'lodash': '2.4.1',
     'autoprefixer-core': '3.1.0',
   }
