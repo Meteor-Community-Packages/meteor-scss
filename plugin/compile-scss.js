@@ -45,7 +45,7 @@ var sourceHandler = function(compileStep) {
 
   options.includePaths = options.includePaths.concat(path.dirname(compileStep._fullInputPath));
 
-  options.success = Meteor.bindEnvironment(function (css) {
+  var success = function (css) {
     if (options.enableAutoprefixer
        || (compileStep.fileOptions && compileStep.fileOptions.isTest)) {
       var autoprefixerOptions = options.autoprefixerOptions || {};
@@ -77,11 +77,14 @@ var sourceHandler = function(compileStep) {
       data: css.css
       // sourceMap: JSON.stringify(sourceMap)
     });
-    future.return(null);
-  });
-  options.error = Meteor.bindEnvironment(function (error) {
+    return future.return(null);
+  }
+  var error = function (error) {
     return  future.error(error);
-  });
+  }
+
+  options.success = Meteor.wrapAsync(success);
+  options.error = Meteor.wrapAsync(error);
 
   try {
     sass.render(options);
