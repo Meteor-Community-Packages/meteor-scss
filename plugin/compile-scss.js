@@ -45,7 +45,7 @@ var sourceHandler = function(compileStep) {
 
   options.includePaths = options.includePaths.concat(path.dirname(compileStep._fullInputPath));
 
-  options.success = function (css) {
+  options.success = Meteor.bindEnvironment(function (css) {
     if (options.enableAutoprefixer
        || (compileStep.fileOptions && compileStep.fileOptions.isTest)) {
       var autoprefixerOptions = options.autoprefixerOptions || {};
@@ -78,10 +78,10 @@ var sourceHandler = function(compileStep) {
       // sourceMap: JSON.stringify(sourceMap)
     });
     future.return(null);
-  }
-  options.error = function (error) {
+  });
+  options.error = Meteor.bindEnvironment(function (error) {
     return  future.error(error);
-  }
+  });
 
   try {
     sass.render(options);
