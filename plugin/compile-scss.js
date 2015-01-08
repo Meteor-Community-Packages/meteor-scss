@@ -33,10 +33,8 @@ var sourceHandler = function(compileStep) {
   }
 
   var options = _.extend({}, scssOptions, {
-    sourceMap:         true,
-    sourceMapEmbed:    true,
-    sourceMapContents: true,
-    outputStyle:       'compressed',
+    sourceMap:         false,
+    outputStyle:       'compressed'
   });
 
   options.file  = compileStep._fullInputPath;
@@ -64,8 +62,9 @@ var sourceHandler = function(compileStep) {
         return future.error(e);
       }
     }
-    console.log(css);
     if (options.sourceComments !== 'none') {
+      // The following is disabled until 2.0.0-beta2
+
       // sourceMap = JSON.parse(css.sourceMap);
       // delete sourceMap.file;
       // sourceMap.file = compileStep.pathForSourceMap;
@@ -83,8 +82,6 @@ var sourceHandler = function(compileStep) {
   options.error = function (error) {
     return  future.error(error);
   }
-
-
 
   try {
     sass.render(options);
