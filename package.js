@@ -4,8 +4,9 @@ Package.describe({
   git: "https://github.com/fourseven/meteor-scss.git"
 });
 
-Package._transitional_registerBuildPlugin({
+Package.registerBuildPlugin({
   name: 'fourseven:scss',
+  use: [],
   sources: [
     'plugin/compile-scss.js'
   ],

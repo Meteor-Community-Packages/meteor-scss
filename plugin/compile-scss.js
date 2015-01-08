@@ -84,7 +84,7 @@ var sourceHandler = function(compileStep) {
   }
 
   options.success = Meteor.wrapAsync(success);
-  options.error = Meteor.wrapAsync(error);
+  options.error   = Meteor.wrapAsync(error);
 
   try {
     sass.render(options);
