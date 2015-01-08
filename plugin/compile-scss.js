@@ -1,9 +1,9 @@
 var path = Npm.require('path');
 var sass = Npm.require('node-sass');
-var fs = Npm.require('fs');
-var _ = Npm.require('lodash');
+var fs   = Npm.require('fs');
+var _    = Npm.require('lodash');
+
 var autoprefixer = Npm.require('autoprefixer-core');
-var Future = Npm.require('fibers/future');
 
 var loadJSONFile = function (filePath) {
   var content = fs.readFileSync(filePath);
@@ -26,7 +26,6 @@ var sourceHandler = function(compileStep) {
   var optionsFile = path.join(process.cwd(), 'scss.json');
   var scssOptions = {};
   var sourceMap   = null;
-  var future = new Future;
 
   if (fs.existsSync(optionsFile)) {
     scssOptions = loadJSONFile(optionsFile);
@@ -45,7 +44,7 @@ var sourceHandler = function(compileStep) {
 
   options.includePaths = options.includePaths.concat(path.dirname(compileStep._fullInputPath));
 
-  var success = function (css) {
+  var success = function (result) {
     if (options.enableAutoprefixer
        || (compileStep.fileOptions && compileStep.fileOptions.isTest)) {
       var autoprefixerOptions = options.autoprefixerOptions || {};
@@ -53,13 +52,12 @@ var sourceHandler = function(compileStep) {
       try {
         // Applying Autoprefixer to compiled css
         var processor = autoprefixer(autoprefixerOptions);
-        css = processor.process(css).css;
+        result.css = processor.process(result.css).css;
       } catch (e) {
         compileStep.error({
           message: "Autoprefixer error: " + e,
           sourcePath: e.filename || compileStep.inputPath
         });
-        return future.error(e);
       }
     }
     if (options.sourceComments !== 'none') {
@@ -74,20 +72,15 @@ var sourceHandler = function(compileStep) {
 
     compileStep.addStylesheet({
       path: compileStep.inputPath + ".css",
-      data: css.css
+      data: result.css
       // sourceMap: JSON.stringify(sourceMap)
     });
-    return future.return(null);
   }
   var error = function (error) {
-    return  future.error(error);
   }
 
-  options.success = Meteor.wrapAsync(success);
-  options.error   = Meteor.wrapAsync(error);
-
   try {
-    sass.render(options);
+    var result = sass.renderSync(options);
   } catch (e) {
     // less.render() is supposed to report any errors via its
     // callback. But sometimes, it throws them instead. This is
@@ -98,9 +91,10 @@ var sourceHandler = function(compileStep) {
       line: e.line - 1,  // dunno why, but it matches
       column: e.column + 1
     });
-    return;
+    return error(e);
   }
-  return future.wait();
+
+  success(result);
 }
 
 Plugin.registerSourceHandler("scss", {archMatching: 'web'}, sourceHandler);
