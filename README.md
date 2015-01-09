@@ -10,6 +10,15 @@ Also includes the option to run [Autoprefixer](https://github.com/postcss/autopr
 To use:
 This package is configured to find *.scss *.sass files and compile them through node-sass and provide them to the page. So just start using it, the scss files can be anywhere in the project.
 
+Installation
+------------
+
+You can install meteor-scss using Meteor's package management system:
+
+```bash
+> meteor add fourseven:scss
+```
+
 Configuration
 -------------
 
