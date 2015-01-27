@@ -1,6 +1,6 @@
 Package.describe({
   summary: 'Style with attitude and autoprefixer.',
-  version: "2.0.0-beta_1",
+  version: "2.0.0-beta_2",
   git: "https://github.com/fourseven/meteor-scss.git"
 });
 
