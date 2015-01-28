@@ -1,30 +1,24 @@
-meteor-scss
-===========
+# Sass for Meteor
+This package is a Sass compiler for Meteor. In addition to compiling Sass files, it has options to control the load order of Sass files and use Autoprefixer on the generated CSS.
 
-Node-sass wrapped to work with meteor.
+## Installation
 
-This allows .scss and .sass files to work with meteor.
-
-Also includes the option to run [Autoprefixer](https://github.com/postcss/autoprefixer) on the css that sass has compiled.
-
-To use:
-This package is configured to find *.scss *.sass files and compile them through node-sass and provide them to the page. So just start using it, the scss files can be anywhere in the project.
-
-Installation
-------------
-
-You can install meteor-scss using Meteor's package management system:
+Install using Meteor's package management system:
 
 ```bash
 > meteor add fourseven:scss
 ```
 
-Configuration
--------------
+## Usage
+Without any additional configuration after installation, this package automatically finds all `.scss` and `.sass` files in your project, compiles them with node-sass, and includes the resulting CSS in the application bundle that Meteor sends to the client. The files can be anywhere in your project.
 
-Add a `scss.json` file at the project's root to pass configuration options to node-sass. See [node-sass](https://github.com/sass/node-sass)'s documentation for a list of options.
+## Configuration
+This package has options that can be specified in a `scss.json` file in the project's root directory. 
 
-Example (for using bourbon and neat with meteor-bower):
+### includePaths
+If you have packages that have stylesheets you want to import, you can add those paths to the compiler to simplify importing them
+
+For example, if you're using Bourbon and Neat with [mquandalle:bower](https://github.com/mquandalle/meteor-bower)
 
 ```json
 {
@@ -36,11 +30,19 @@ Example (for using bourbon and neat with meteor-bower):
 }
 ```
 
-Autoprefixer support
---------------------
-To enable Autoprefixer support, set 'enableAutoprefixer' to true in your 'scss.json' file. Custom [Autoprefixer config](https://github.com/postcss/autoprefixer-core#usage) can be set in the 'autoprefixerOptions' variable in the same file. If you don't specify any options, the [default](https://github.com/postcss/autoprefixer-core#usage) config will be used.
+Note: On an initial build, i.e. after a fresh `meteor reset`, importing sass files from packages will throw an error, because the `.meteor/local/` directory doesn't exist yet.
 
-Autoprefixer example:
+### Controlling load order
+Out of the box, if you want to use variables and mixins in a Sass file, they must be explicitly imported. In addition, there is no easy way to control which files are loaded first, which can be crucial if you're using a CSS framework like Bootstrap or even just trying to share global styles appropriately. Having a single file that imports all of the other Sass files, an index file of sorts, solves this, but is tedious and fragile to manually maintain. This package provides a mechanism to automate that.
+
+If the `"useIndex"` option in the `scss.json` file is `true`, this plugin will make a file named `index.scss` that has imports for every `.scss` and `.sass` file in the project, with the exception of files whose names are prefixed with an underscore (i.e. partials). You can specify a different filepath for the index file (instead of `index.scss`) with the `"indexFilePath"` option.
+
+New Sass files will have import statements automatically appended to the index file. Existing content will never be overwritten. You can arrange the imports in any order you want. Import your mixins and theme variables first and put them in "scope" for all of the others.
+
+### Autoprefixer
+To enable [Autoprefixer](https://github.com/postcss/autoprefixer) set `"enableAutoprefixer"` to `true` in your `scss.json` file. You can configure what options are given to Autoprefixer with the `"autoprefixerOptions"` field. See the [Autoprefixer](https://github.com/postcss/autoprefixer-core#usage) docs to see what the default options are.
+
+Example:
 
 ```json
 {
@@ -52,11 +54,10 @@ Autoprefixer example:
 }
 ```
 
-LibSass vs Ruby Sass
---------------------
-Please note that this project uses LibSass. As such some features are not implemented compared to the Ruby version/implementation. Things are improving, so please be patient. Before you ask, I have no intention of making a version of this package that links to the Ruby version instead.
+
+## LibSass vs Ruby Sass
+Please note that this project uses [LibSass](https://github.com/hcatlin/libsass). LibSass is a C++ implementation of the Ruby Sass compiler. It has most of the features of the Ruby version, but not all of them. Things are improving, so please be patient. Before you ask, I have no intention of making a version of this package that links to the Ruby version instead.
 
 
-Heroku
-------
+## Heroku
 If you're having problems running this on Heroku please use the cedar-14 stack, by typing the following `heroku stack:set cedar-14` - see [#41](https://github.com/fourseven/meteor-scss/issues/41) for more information.
