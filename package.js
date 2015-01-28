@@ -6,7 +6,7 @@ Package.describe({
 });
 
 Package.registerBuildPlugin({
-  name: 'scss_compiler',
+  name: 'sass_compiler',
   use: [],
   sources: [
     'plugin/compile-scss.js'
