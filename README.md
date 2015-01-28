@@ -1,5 +1,5 @@
 # Sass for Meteor
-This package is a Sass compiler for Meteor. In addition to compiling Sass files, it has options to control the load order of Sass files and use Autoprefixer on the generated CSS.
+This is a Sass build plugin for Meteor. It compiles Sass files with node-sass and it has options to control the load order of Sass files and use Autoprefixer on the generated CSS.
 
 ## Installation
 
@@ -10,7 +10,7 @@ Install using Meteor's package management system:
 ```
 
 ## Usage
-Without any additional configuration after installation, this package automatically finds all `.scss` and `.sass` files in your project, compiles them with node-sass, and includes the resulting CSS in the application bundle that Meteor sends to the client. The files can be anywhere in your project.
+Without any additional configuration after installation, this package automatically finds all `.scss` and `.sass` files in your project, compiles them with [node-sass](https://github.com/sass/node-sass), and includes the resulting CSS in the application bundle that Meteor sends to the client. The files can be anywhere in your project.
 
 ## Configuration
 This package has options that can be specified in a `scss.json` file in the project's root directory. 
@@ -37,6 +37,14 @@ Out of the box, if you want to use variables and mixins in a Sass file, they mus
 
 If the `"useIndex"` option in the `scss.json` file is `true`, this plugin will make a file named `index.scss` that has imports for every `.scss` and `.sass` file in the project, with the exception of files whose names are prefixed with an underscore (i.e. partials). You can specify a different filepath for the index file (instead of `index.scss`) with the `"indexFilePath"` option.
 
+Example:
+
+```json
+{
+  "useIndex" : true,
+  "indexFilePath" : "client/stylesheets/main.scss"
+}
+```
 New Sass files will have import statements automatically appended to the index file. Existing content will never be overwritten. You can arrange the imports in any order you want. Import your mixins and theme variables first and put them in "scope" for all of the others.
 
 ### Autoprefixer
