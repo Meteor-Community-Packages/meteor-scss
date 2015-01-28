@@ -4,13 +4,13 @@
       "version": "3.1.0",
       "dependencies": {
         "caniuse-db": {
-          "version": "1.0.30000037"
+          "version": "1.0.30000054"
         },
         "postcss": {
           "version": "2.2.6",
           "dependencies": {
             "source-map": {
-              "version": "0.1.41",
+              "version": "0.1.43",
               "dependencies": {
                 "amdefine": {
                   "version": "0.1.0"
@@ -18,7 +18,7 @@
               }
             },
             "js-base64": {
-              "version": "2.1.5"
+              "version": "2.1.7"
             }
           }
         }
