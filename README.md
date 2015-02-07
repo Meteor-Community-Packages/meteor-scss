@@ -13,7 +13,7 @@ Install using Meteor's package management system:
 Without any additional configuration after installation, this package automatically finds all `.scss` and `.sass` files in your project, compiles them with [node-sass](https://github.com/sass/node-sass), and includes the resulting CSS in the application bundle that Meteor sends to the client. The files can be anywhere in your project.
 
 ## Configuration
-This package has options that can be specified in a `scss.json` file in the project's root directory. 
+This package has options that can be specified in a `scss.json` file in the project's root directory.
 
 ### includePaths
 If you have packages that have stylesheets you want to import, you can add those paths to the compiler to simplify importing them
@@ -32,7 +32,7 @@ For example, if you're using Bourbon and Neat with [mquandalle:bower](https://gi
 
 Note: On an initial build, i.e. after a fresh `meteor reset`, importing sass files from packages will throw an error, because the `.meteor/local/` directory doesn't exist yet.
 
-### Controlling load order
+### Controlling load order [since 2.0.0-beta_3]
 Out of the box, if you want to use variables and mixins in a Sass file, they must be explicitly imported. In addition, there is no easy way to control which files are loaded first, which can be crucial if you're using a CSS framework like Bootstrap or even just trying to share global styles appropriately. Having a single file that imports all of the other Sass files, an index file of sorts, solves this, but is tedious and fragile to manually maintain. This package provides a mechanism to automate that.
 
 If the `"useIndex"` option in the `scss.json` file is `true`, this plugin will make a file named `index.scss` that has imports for every `.scss` and `.sass` file in the project, with the exception of files whose names are prefixed with an underscore (i.e. partials). You can specify a different filepath for the index file (instead of `index.scss`) with the `"indexFilePath"` option.

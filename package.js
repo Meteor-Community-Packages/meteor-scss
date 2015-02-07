@@ -1,12 +1,12 @@
 Package.describe({
   summary: 'Style with attitude and autoprefixer.',
-  version: "2.0.0-beta_2",
+  version: "2.0.0-beta_3",
   git: "https://github.com/fourseven/meteor-scss.git",
   name: "fourseven:scss"
 });
 
 Package.registerBuildPlugin({
-  name: 'sass_compiler',
+  name: 'fourseven:scss',
   use: [],
   sources: [
     'plugin/compile-scss.js'
