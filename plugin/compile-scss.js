@@ -56,10 +56,13 @@ var sourceHandler = function(compileStep) {
     }
   }
 
-  var options = _.extend(scssOptions, {
-    sourceMap:     false,
-    outputStyle:   'compressed'
-  });
+  var options = _.extend({
+    sourceMap:         true,
+    // These are the magic incantations for sass sourcemaps
+    sourceMapContents: true,
+    sourceMapEmbed:    true,
+    outFile:           compileStep.pathForSourceMap
+  }, scssOptions);
 
   options.file  = compileStep.fullInputPath;
 
@@ -99,20 +102,10 @@ var sourceHandler = function(compileStep) {
     }
   }
 
-  if (options.sourceComments !== 'none') {
-    // The following is disabled until 2.0.0-beta2
-
-    // sourceMap = JSON.parse(css.sourceMap);
-    // delete sourceMap.file;
-    // sourceMap.file = compileStep.pathForSourceMap;
-    // sourceMap.sources = [compileStep.inputPath];
-    // sourceMap.sourcesContent = [compileStep.read().toString('utf8')];
-  }
-
   compileStep.addStylesheet({
     path: compileStep.inputPath + ".css",
-    data: result.css
-    // sourceMap: JSON.stringify(sourceMap)
+    data: result.css,
+    sourceMap: result.sourceMap
   });
 };
 
