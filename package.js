@@ -1,6 +1,6 @@
 Package.describe({
   summary: 'Style with attitude and autoprefixer.',
-  version: "2.0.0-beta_3",
+  version: "2.0.0",
   git: "https://github.com/fourseven/meteor-scss.git",
   name: "fourseven:scss"
 });
@@ -12,7 +12,7 @@ Package.registerBuildPlugin({
     'plugin/compile-scss.js'
   ],
   npmDependencies: {
-    'node-sass': 'v2.0.0-beta',
+    'node-sass': '2.0.0',
     'lodash': '2.4.1',
     'autoprefixer-core': '3.1.0',
   }
