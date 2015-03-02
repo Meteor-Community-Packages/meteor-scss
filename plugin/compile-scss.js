@@ -62,7 +62,8 @@ var sourceHandler = function(compileStep) {
     // These are the magic incantations for sass sourcemaps
     sourceMapContents: true,
     sourceMapEmbed:    true,
-    outFile:           compileStep.pathForSourceMap
+    outFile:           compileStep.pathForSourceMap,
+    includePaths:      []
   }, scssOptions);
 
   options.file  = compileStep.fullInputPath;
