@@ -88,7 +88,13 @@ var sourceHandler = function(compileStep) {
 
   if ( options.enableAutoprefixer ||
   (compileStep.fileOptions && compileStep.fileOptions.isTest) ) {
-    var autoprefixerOptions = options.autoprefixerOptions || {};
+    // In order to enforce autoprefixer to actually add the prefixed
+    // -webkit-transition css rule, it is necessary to enforce rule generation
+    // for all outdated browsers. Obviously this is not a good default option,
+    // a better test strategy is inevitable here. We might just pass the test
+    // options via fileOptions (i.e. pass {'testAutoprefixerOptions' = {browsers: ['> 0%']}}
+    // instead of {'isTest': true}
+    var autoprefixerOptions = options.autoprefixerOptions || {browsers: ['> 0%']};
 
     try {
       // Applying Autoprefixer to compiled css
