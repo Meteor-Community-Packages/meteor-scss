@@ -28,7 +28,7 @@
       "version": "2.4.1"
     },
     "node-sass": {
-      "version": "2.0.0",
+      "version": "2.0.1",
       "dependencies": {
         "chalk": {
           "version": "0.5.1",
@@ -37,7 +37,7 @@
               "version": "1.1.0"
             },
             "escape-string-regexp": {
-              "version": "1.0.2"
+              "version": "1.0.3"
             },
             "has-ansi": {
               "version": "0.1.0",
@@ -107,7 +107,7 @@
           "version": "4.0.1"
         },
         "meow": {
-          "version": "3.0.0",
+          "version": "3.1.0",
           "dependencies": {
             "camelcase-keys": {
               "version": "1.0.0",
@@ -121,19 +121,13 @@
               }
             },
             "indent-string": {
-              "version": "1.2.0",
+              "version": "1.2.1",
               "dependencies": {
-                "get-stdin": {
-                  "version": "3.0.2"
-                },
                 "repeating": {
-                  "version": "1.1.1",
+                  "version": "1.1.2",
                   "dependencies": {
                     "is-finite": {
                       "version": "1.0.0"
-                    },
-                    "meow": {
-                      "version": "2.1.0"
                     }
                   }
                 }
@@ -153,7 +147,7 @@
           }
         },
         "mocha": {
-          "version": "2.1.0",
+          "version": "2.2.0",
           "dependencies": {
             "commander": {
               "version": "2.3.0"
@@ -207,11 +201,14 @@
                   "version": "0.3.0"
                 }
               }
+            },
+            "supports-color": {
+              "version": "1.2.1"
             }
           }
         },
         "nan": {
-          "version": "1.6.2"
+          "version": "1.7.0"
         },
         "npmconf": {
           "version": "2.1.1",
@@ -311,7 +308,7 @@
               }
             },
             "node-uuid": {
-              "version": "1.4.2"
+              "version": "1.4.3"
             },
             "qs": {
               "version": "2.3.3"
@@ -348,7 +345,7 @@
               "version": "2.3.1",
               "dependencies": {
                 "hoek": {
-                  "version": "2.11.0"
+                  "version": "2.11.1"
                 },
                 "boom": {
                   "version": "2.6.1"
@@ -376,7 +373,7 @@
               }
             },
             "isstream": {
-              "version": "0.1.1"
+              "version": "0.1.2"
             }
           }
         },
@@ -387,7 +384,7 @@
               "version": "2.6.0"
             },
             "glob": {
-              "version": "4.3.5",
+              "version": "4.5.0",
               "dependencies": {
                 "inflight": {
                   "version": "1.0.4",
@@ -429,7 +426,7 @@
           }
         },
         "semver": {
-          "version": "4.2.2"
+          "version": "4.3.1"
         },
         "shelljs": {
           "version": "0.3.0"
