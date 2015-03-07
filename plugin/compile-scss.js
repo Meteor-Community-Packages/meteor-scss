@@ -31,7 +31,8 @@ var sourceHandler = function(compileStep) {
     return;
   // XXX annoying that this is replicated in .css, .less, and .styl
 
-  var optionsFile = path.join(process.cwd(), 'scss.json');
+  var basePath = compileStep.fullInputPath.slice(0, -compileStep.inputPath.length);
+  var optionsFile = path.resolve(basePath, 'scss.json');
   var scssOptions = {};
   var sourceMap   = null;
 
@@ -61,7 +62,8 @@ var sourceHandler = function(compileStep) {
     // These are the magic incantations for sass sourcemaps
     sourceMapContents: true,
     sourceMapEmbed:    true,
-    outFile:           compileStep.pathForSourceMap
+    outFile:           compileStep.pathForSourceMap,
+    includePaths:      []
   }, scssOptions);
 
   options.file  = compileStep.fullInputPath;
@@ -69,6 +71,11 @@ var sourceHandler = function(compileStep) {
   if ( !_.isArray(options.includePaths) ) {
     options.includePaths = [options.includePaths];
   }
+
+  // Convert relative paths supplied via the options file to absolute paths.
+  options.includePaths = _.map(options.includePaths, function(includePath) {
+    return path.resolve(basePath, includePath);
+  });
 
   options.includePaths = options.includePaths.concat(path.dirname(compileStep.fullInputPath));
 
