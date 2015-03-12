@@ -74,7 +74,7 @@ Example:
 ## LibSass vs Ruby Sass
 Please note that this project uses [LibSass](https://github.com/hcatlin/libsass). LibSass is a C++ implementation of the Ruby Sass compiler. It has most of the features of the Ruby version, but not all of them. Things are improving, so please be patient. Before you ask, I have no intention of making a version of this package that links to the Ruby version instead.
 
-For a quick rundown on what libsass does and doesn't (currently) do, check here [check here](http://sass-compatibility.github.io/).
+For a quick rundown on what libsass does and doesn't (currently) do, [check here](http://sass-compatibility.github.io/).
 
 
 ## Heroku
