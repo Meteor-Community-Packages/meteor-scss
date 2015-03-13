@@ -25,5 +25,15 @@ Package.on_test(function (api) {
            'templating']);
   api.use(['fourseven:scss']);
   api.add_files(['test/scss_tests.html', 'test/scss_tests.js'], 'client');
-  api.add_files(['test/scss_tests.scss'], 'client',  {isTest:true});
+  api.add_files(['test/scss_tests.scss'], 'client',  {
+    testOptions: {
+      enableAutoprefixer: true,
+      autoprefixerOptions: {
+        // In order to force autoprefixer to actually add the prefixed
+        // -webkit-transition css rule, it is necessary to enforce rule
+        // generation for all outdated browsers.
+        browsers: ['> 0%']
+      }
+    }
+  });
 });
