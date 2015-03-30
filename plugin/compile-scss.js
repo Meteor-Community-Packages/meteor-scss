@@ -25,6 +25,7 @@ var loadJSONFile = function (filePath) {
   }
 };
 
+
 var sourceHandler = function(compileStep) {
   // Don't process partials
   if ( path.basename(compileStep.inputPath)[0] === '_' )
@@ -35,7 +36,6 @@ var sourceHandler = function(compileStep) {
   var optionsFile = path.resolve(basePath, 'scss.json');
   var scssOptions = {};
   var sourceMap   = null;
-
   if (fs.existsSync(optionsFile)) {
     scssOptions = loadJSONFile(optionsFile);
   } else if (compileStep.fileOptions && compileStep.fileOptions.testOptions) {
@@ -59,13 +59,27 @@ var sourceHandler = function(compileStep) {
     }
   }
 
+  var packageRegexp = /(\w+\:(\w+))\/(.+)/i;
+  var basePackagePath = null;
+  var meteorImporter = function(url, prev, done) {
+    var resolvedPath = packageRegexp.exec(url);
+    // If file has a package prefix
+    if (resolvedPath) {
+      basePackagePath = path.resolve(basePath, ".meteor/local/build/programs/server/assets/packages", resolvedPath[1].replace(/\:/, "_"), resolvedPath[2]);
+      return {file: path.resolve(basePackagePath, resolvedPath[3])};
+    } else {
+      return {file: path.resolve((basePackagePath || basePath), url)};
+    }
+  }
+
   var options = _.extend({
     sourceMap:         true,
     // These are the magic incantations for sass sourcemaps
     sourceMapContents: true,
     sourceMapEmbed:    true,
     outFile:           compileStep.pathForSourceMap,
-    includePaths:      []
+    includePaths:      [],
+    importer:          meteorImporter
   }, scssOptions);
 
   options.file  = compileStep.fullInputPath;
