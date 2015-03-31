@@ -14,6 +14,10 @@ var generatedIndexMessage = [
   ""
 ].join("\n");
 
+var CONFIG_FILE_NAME = 'scss.json';
+
+var projectOptionsFile = path.resolve(process.cwd(), CONFIG_FILE_NAME);
+
 var loadJSONFile = function (filePath) {
   var content = fs.readFileSync(filePath);
   try {
@@ -30,14 +34,16 @@ var sourceHandler = function(compileStep) {
   if ( path.basename(compileStep.inputPath)[0] === '_' )
     return;
   // XXX annoying that this is replicated in .css, .less, and .styl
-
   var basePath = compileStep.fullInputPath.slice(0, -compileStep.inputPath.length);
-  var optionsFile = path.resolve(basePath, 'scss.json');
-  var scssOptions = {};
-  var sourceMap   = null;
+  // If a package has a scss.json file this takes precedence.
+  var packageOptionsFile = path.resolve(basePath, CONFIG_FILE_NAME);
 
-  if (fs.existsSync(optionsFile)) {
-    scssOptions = loadJSONFile(optionsFile);
+  var scssOptions = {};
+
+  if (fs.existsSync(packageOptionsFile)) {
+    scssOptions = loadJSONFile(packageOptionsFile);
+  } else if (fs.existsSync(projectOptionsFile)) {
+    scssOptions = loadJSONFile(projectOptionsFile);
   } else if (compileStep.fileOptions && compileStep.fileOptions.testOptions) {
     scssOptions = compileStep.fileOptions.testOptions;
   }
@@ -97,11 +103,16 @@ var sourceHandler = function(compileStep) {
 
   if ( options.enableAutoprefixer) {
     var autoprefixerOptions = options.autoprefixerOptions || {}
-
+    var autoprefixerProcessingOptions = {
+      from: compileStep.inputPath,
+      to: compileStep.inputPath + ".css",
+      map: true
+    };
     try {
       // Applying Autoprefixer to compiled css
-      var processor = autoprefixer(autoprefixerOptions);
-      result.css = processor.process(result.css).css;
+      var processor      = autoprefixer(autoprefixerOptions);
+      var prefixedOutput = processor.process(result.css, autoprefixerProcessingOptions);
+      result.css         = prefixedOutput.css;
     } catch (e) {
       compileStep.error({
         message: "Autoprefixer error: " + e,
@@ -109,11 +120,9 @@ var sourceHandler = function(compileStep) {
       });
     }
   }
-
   compileStep.addStylesheet({
     path: compileStep.inputPath + ".css",
-    data: result.css,
-    sourceMap: result.sourceMap
+    data: result.css
   });
 };
 
