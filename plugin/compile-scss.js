@@ -122,7 +122,7 @@ var sourceHandler = function(compileStep) {
   }
   compileStep.addStylesheet({
     path: compileStep.inputPath + ".css",
-    data: result.css
+    data: result.css.toString()
   });
 };
 
