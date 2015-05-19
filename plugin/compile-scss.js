@@ -91,13 +91,11 @@ var sourceHandler = function(compileStep) {
   try {
     result = sass.renderSync(options);
   } catch (error) {
-    e = JSON.parse(error);  // error should be an object, not a string, if using render
-                            // guess it hasn't been implemented for renderSync
     return compileStep.error({
-      message: "Scss compiler error: " + e.message + "\n",
-      sourcePath: e.file || compileStep.inputPath,
-      line: e.line,
-      column: e.column
+      message: "Scss compiler error: " + error.message + "\n",
+      sourcePath: error.file || compileStep.inputPath,
+      line: error.line,
+      column: error.column
     });
   }
 
