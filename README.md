@@ -13,7 +13,7 @@ Install using Meteor's package management system:
 Without any additional configuration after installation, this package automatically finds all `.scss` and `.sass` files in your project, compiles them with [node-sass](https://github.com/sass/node-sass), and includes the resulting CSS in the application bundle that Meteor sends to the client. The files can be anywhere in your project.
 
 ## Configuration
-This package has options that can be specified in a `scss.json` file in the project's root directory. Please restart your server after changing this file to allow Sass to recompute your css.
+This package has options that can be specified in a `scss.json` file in the project's root directory (or a package's root directory, if you're using it from a package). Please restart your server after changing this file to allow Sass to recompute your css.
 
 ### includePaths
 If you have packages that have stylesheets you want to import, you can add those paths to the compiler to simplify importing them
