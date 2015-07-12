@@ -50,15 +50,19 @@ var sourceHandler = function(compileStep) {
 
   if ( scssOptions.useIndex ) {
     var indexFilePath = scssOptions.indexFilePath || "index.scss";
+    // Swap the input path (from windows \ to unix / - since node-sass seems to prefer it)
+    // This should probably be through a path method, but no one uses the \ slash in a .scss file,
+    // Which is what would be outputted to the indexFilePath if it was done via path.normalize.
+    var normalizedPath = compileStep.inputPath.replace(/\\/g, "/");
     // If this isn't the index file, add it to the index if need be
-    if ( compileStep.inputPath != indexFilePath ) {
+    if ( normalizedPath != indexFilePath ) {
       if ( fs.existsSync(indexFilePath) ) {
         var scssIndex = fs.readFileSync(indexFilePath, 'utf8');
-        if (scssIndex.indexOf(compileStep.inputPath) == -1) {
-          fs.appendFileSync(indexFilePath, '\n@import "' + compileStep.inputPath + '";', 'utf8');
+        if (scssIndex.indexOf(normalizedPath) == -1) {
+          fs.appendFileSync(indexFilePath, '\n@import "' + normalizedPath + '";', 'utf8');
         }
       } else {
-        var newFile = generatedIndexMessage + '@import "' + compileStep.inputPath + '";\n';
+        var newFile = generatedIndexMessage + '@import "' + normalizedPath + '";\n';
         fs.writeFileSync(indexFilePath, newFile, 'utf8');
       }
       return; // stop here, only compile the indexFile
