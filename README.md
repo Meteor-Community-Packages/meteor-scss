@@ -30,6 +30,18 @@ For example, if you're using Bourbon and Neat with [mquandalle:bower](https://gi
 }
 ```
 
+Or in a package's root directory you need to use the relative path.
+
+```json
+{
+  "includePaths": [
+    "../../.meteor/local/bower",
+    "../../.meteor/local/bower/node-bourbon/assets/stylesheets",
+    "../../.meteor/local/bower/neat/app/assets/stylesheets"
+  ]
+}
+```
+
 Note: On an initial build, i.e. after a fresh `meteor reset`, importing sass files from packages will throw an error, because the `.meteor/local/` directory doesn't exist yet.
 
 ### Sourcemaps [since 2.0.0_1]
