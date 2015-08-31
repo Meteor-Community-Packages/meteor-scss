@@ -3,3 +3,4 @@
 
 meteor/
 .build*
+.idea
