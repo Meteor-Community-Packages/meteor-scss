@@ -1,8 +1,7 @@
 const path = Plugin.path;
+const fs = Plugin.fs;
 const sass = Npm.require('node-sass');
 const Future = Npm.require('fibers/future');
-const fs = Npm.require('fs');
-const _ = Npm.require('lodash');
 
 Plugin.registerCompiler({
   extensions: ['scss', 'sass'],
@@ -15,7 +14,7 @@ class SassCompiler extends MultiFileCachingCompiler {
   constructor() {
     super({
       compilerName: 'sass',
-      defaultCacheSize: 1024*1024*10,
+      defaultCacheSize: 1024*1024*10
     });
   }
 
@@ -42,10 +41,10 @@ class SassCompiler extends MultiFileCachingCompiler {
 
     return !(/\.import\.s(a|c)ss$/.test(pathInPackage) ||
     /(?:^|\/)imports\//.test(pathInPackage));
-
   }
 
   compileOneFile(inputFile, allFiles) {
+
 
     const referencedImportPaths = [];
 
@@ -55,6 +54,7 @@ class SassCompiler extends MultiFileCachingCompiler {
       if (! filePath) {
         throw new Error('filePath is undefined');
       }
+
       if (filePath === inputFile.getPathInPackage()) {
         return {
           packageName: inputFile.getPackageName() || '',
@@ -97,7 +97,7 @@ class SassCompiler extends MultiFileCachingCompiler {
       const isAbsolute = importPath[0] === '/';
       if (isAbsolute) {
         referencedImportPaths.push(importPath);
-        done({ /*file: importPath,*/ contents: fs.readFileSync(importPath, 'utf8')});
+        done({ contents: fs.readFileSync(importPath, 'utf8')});
         return ;
       }
 
@@ -114,20 +114,21 @@ class SassCompiler extends MultiFileCachingCompiler {
         );
       }
 
-      done({ /*file: absolutePath,*/ contents: allFiles.get(absolutePath).getContentsAsString()});
+      done({ contents: allFiles.get(absolutePath).getContentsAsString()});
     }
 
     const f = new Future;
 
-    const options = _.extend({
+    const options = {
       sourceMap:         true,
       sourceMapContents: true,
       sourceMapEmbed:    false,
       sourceComments:    false,
-      outFile: inputFile.getDisplayPath(),
+      sourceMapRoot: '.',
+      outFile: '.'+inputFile.getBasename(),
       importer: importer,
       includePaths:      []
-    }, {}/*scssOptions*/);
+    };
 
     options.file  =  this.getAbsoluteImportPath(inputFile);
 
@@ -149,7 +150,8 @@ class SassCompiler extends MultiFileCachingCompiler {
 
     if (output.map) {
       const map = JSON.parse(output.map.toString('utf-8'));
-      map.sources = map.sources.map(decodeFilePath);
+      const packageName = inputFile.getPackageName();
+      map.sources = map.sources.map(function(filePath){return decodeFilePath(filePath,packageName)});
       output.map = map;
     }
 
@@ -166,16 +168,22 @@ class SassCompiler extends MultiFileCachingCompiler {
   }
 }
 
-
-function decodeFilePath (filePath) {
-  const match = filePath.match(/{(.*)}\/(.*)$/);
-  if (! match)
-    throw new Error(`Failed to decode Sass path: ${filePath}`);
-
-  if (match[1] === '') {
-    // app
-    return match[2];
+function decodeFilePath (filePath,packageName) {
+  if (! filePath.match(/{.*}/)) {
+    if(packageName){
+      return 'packages/' + packageName + '/' + filePath;
+    }else{
+      return filePath;
+    }
+  }else{
+    const match = filePath.match(/{(.*)}\/(.*)$/);
+    if (! match){
+      throw new Error(`Failed to decode Sass path: ${filePath}`);
+    }
+    if (match[1] === '') {
+      // app
+      return match[2];
+    }
+    return 'packages/' + match[1] + '/' + match[2];
   }
-
-  return 'packages/' + match[1] + '/' + match[2];
 }

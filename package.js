@@ -12,8 +12,7 @@ Package.registerBuildPlugin({
     'plugin/compile-scss.js'
   ],
   npmDependencies: {
-    'node-sass': '3.2.0',
-    'lodash': '2.4.1'
+    'node-sass': '3.2.0'
   }
 });
 
