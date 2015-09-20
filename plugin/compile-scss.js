@@ -50,9 +50,16 @@ class SassCompiler extends MultiFileCachingCompiler {
 
     const self = this;
 
+    //Given an imported sass path, return package name and path in the package
+    //Can handle package references like {packagename}/pathInPackage, local paths and absolute paths
     function parseImportPath(filePath, importerDir) {
       if (! filePath) {
         throw new Error('filePath is undefined');
+      }
+
+      //If the referenced file has no extension, add the extension of the parent file.
+      if(! filePath.match(/.s(a|c)ss$/)){
+        filePath += '.'+inputFile.getExtension();
       }
 
       if (filePath === inputFile.getPathInPackage()) {
@@ -61,6 +68,8 @@ class SassCompiler extends MultiFileCachingCompiler {
           pathInPackage: inputFile.getPathInPackage()
         };
       }
+
+      //Relative (to package) file reference
       if (! filePath.match(/^\{.*\}\//)) {
         if (! importerDir) {
           return { packageName: inputFile.getPackageName() || '',
@@ -81,6 +90,7 @@ class SassCompiler extends MultiFileCachingCompiler {
         };
       }
 
+      //Handle (cross-)package reference (e.g. {packagename}/file)
       const match = /^\{(.*)\}\/(.*)$/.exec(filePath);
       if (! match) { return null; }
 
@@ -88,10 +98,13 @@ class SassCompiler extends MultiFileCachingCompiler {
       return {packageName, pathInPackage};
     }
 
+    //Inverse of 'parseImportPath'
+    //Given a package name and the path in the package, return the import path as {packagename}/pathInPackage
     function absoluteImportPath(parsed) {
       return '{' + parsed.packageName + '}/' + parsed.pathInPackage;
     }
 
+    //Handle import statements found by the sass compiler, used to handle cross-package imports
     const importer = function(importPath,prev,done){
 
       const isAbsolute = importPath[0] === '/';
@@ -117,6 +130,7 @@ class SassCompiler extends MultiFileCachingCompiler {
       done({ contents: allFiles.get(absolutePath).getContentsAsString()});
     }
 
+    //Start compile sass (async)
     const f = new Future;
 
     const options = {
@@ -147,13 +161,16 @@ class SassCompiler extends MultiFileCachingCompiler {
       });
       return null;
     }
+    //End compile sass
 
+    //Start fix sourcemap references
     if (output.map) {
       const map = JSON.parse(output.map.toString('utf-8'));
       const packageName = inputFile.getPackageName();
       map.sources = map.sources.map(function(filePath){return decodeFilePath(filePath,packageName)});
       output.map = map;
     }
+    //End fix sourcemap references
 
     const compileResult = {css: output.css.toString('utf-8'), sourceMap: output.map};
     return {compileResult,referencedImportPaths};
