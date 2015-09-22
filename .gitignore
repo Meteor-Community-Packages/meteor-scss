@@ -4,3 +4,4 @@
 meteor/
 .build*
 .idea
+.npm

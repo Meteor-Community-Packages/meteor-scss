@@ -40,7 +40,8 @@ class SassCompiler extends MultiFileCachingCompiler {
     const pathInPackage = inputFile.getPathInPackage();
 
     return !(/\.import\.s(a|c)ss$/.test(pathInPackage) ||
-    /(?:^|\/)imports\//.test(pathInPackage));
+    /(?:^|\/)imports\//.test(pathInPackage) ||
+    /^_/.test(inputFile.getBasename()));
   }
 
   compileOneFile(inputFile, allFiles) {
@@ -122,12 +123,12 @@ class SassCompiler extends MultiFileCachingCompiler {
       referencedImportPaths.push(absolutePath);
 
       if (! allFiles.has(absolutePath)) {
-        throw new Error(
+        done(new Error(
           `Cannot read file ${absolutePath} for ${inputFile.getDisplayPath()}`
-        );
+        ));
+      } else {
+        done({ contents: allFiles.get(absolutePath).getContentsAsString()});
       }
-
-      done({ contents: allFiles.get(absolutePath).getContentsAsString()});
     }
 
     //Start compile sass (async)
@@ -155,7 +156,7 @@ class SassCompiler extends MultiFileCachingCompiler {
     } catch (e) {
       inputFile.error({
         message: `Scss compiler error: ${e.message}\n`,
-        sourcePath: decodeFilePath(e.filename),
+        sourcePath: decodeFilePath(e.filename || ''),
         line: e.line,
         column: e.column
       });
