@@ -19,8 +19,8 @@ Version 3.3.3 is built for Meteor 1.2, and has been largely re-written. Not all 
 These are on by default.
 
 ### Autoprefixer
-As of Meteor 1.2 autoprefixer should be installed as a separate plugin, and is no longer included with this package.
-
+As of Meteor 1.2 autoprefixer should preferably be installed as a separate plugin, and is no longer included with this package.
+However, note that due to [certain limitations](https://github.com/meteor/meteor/issues/5219) of the current Meteor build system, no autoprefix plugin is available at this moment.
 
 ## LibSass vs Ruby Sass
 Please note that this project uses [LibSass](https://github.com/hcatlin/libsass). LibSass is a C++ implementation of the Ruby Sass compiler. It has most of the features of the Ruby version, but not all of them. Things are improving, so please be patient. Before you ask, I have no intention of making a version of this package that links to the Ruby version instead.
