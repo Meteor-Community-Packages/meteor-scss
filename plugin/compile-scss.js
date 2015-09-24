@@ -2,12 +2,37 @@ const path = Plugin.path;
 const fs = Plugin.fs;
 const sass = Npm.require('node-sass');
 const Future = Npm.require('fibers/future');
+const files = Plugin.files;
+
 
 Plugin.registerCompiler({
   extensions: ['scss', 'sass'],
   archMatching: 'web'
 }, () => new SassCompiler());
 
+var toPosixPath = function (p, partialPath) {
+  // Sometimes, you can have a path like \Users\IEUser on windows, and this
+  // actually means you want C:\Users\IEUser
+  if (p[0] === "\\" && (! partialPath)) {
+    p = process.env.SystemDrive + p;
+  }
+
+  p = p.replace(/\\/g, '/');
+  if (p[1] === ':' && ! partialPath) {
+    // transform "C:/bla/bla" to "/c/bla/bla"
+    p = '/' + p[0] + p.slice(2);
+  }
+
+  return p;
+};
+
+var convertToStandardPath = function (osPath, partialPath) {
+  if (process.platform === "win32") {
+    return toPosixPath(osPath, partialPath);
+  }
+
+  return osPath;
+}
 
 // CompileResult is {css, sourceMap}.
 class SassCompiler extends MultiFileCachingCompiler {
@@ -53,6 +78,8 @@ class SassCompiler extends MultiFileCachingCompiler {
     //Handles omissions of the extension and underscore prefix
     function getRealImportPath(importPath){
       const rawImportPath = importPath;
+
+      importPath = convertToStandardPath(importPath);
 
       //If the referenced file has no extension, add the extension of the parent file.
       if(! importPath.match(/.s(a|c)ss$/)){
@@ -175,7 +202,7 @@ class SassCompiler extends MultiFileCachingCompiler {
       try{
         const parsed = getRealImportPath(importPath);
         if (parsed.absolute) {
-          referencedImportPaths.push(parsed.pathInPackage);
+          //referencedImportPaths.push(parsed.pathInPackage);
           done({ contents: fs.readFileSync(parsed.pathInPackage, 'utf8')});
           return ;
         }else{
