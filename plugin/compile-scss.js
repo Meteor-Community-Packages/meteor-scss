@@ -52,6 +52,7 @@ class SassCompiler extends MultiFileCachingCompiler {
 
     //Handles omissions of the extension and underscore prefix
     function getRealImportPath(importPath){
+      const rawImportPath = importPath;
 
       //If the referenced file has no extension, add the extension of the parent file.
       if(! importPath.match(/.s(a|c)ss$/)){
@@ -64,7 +65,7 @@ class SassCompiler extends MultiFileCachingCompiler {
         if(!fileExists(importPath)){
           importPath = addUnderscore(importPath);
           if(!fileExists(importPath)){
-            throw new Error(`Cannot read file ${filePath} for ${inputFile.getDisplayPath()}`);
+            throw new Error(`File to import: ${rawImportPath} not found. Import origin: ${inputFile.getDisplayPath()}`);
           }
         }
         return {absolute:true,packageName:true,pathInPackage:importPath};
@@ -77,7 +78,7 @@ class SassCompiler extends MultiFileCachingCompiler {
         parsed.pathInPackage = addUnderscore(parsed.pathInPackage);
         absolutePath = meteorImportPath(parsed);
         if(!allFiles.has(absolutePath)){
-          throw new Error(`Cannot read file ${absolutePath} for ${inputFile.getDisplayPath()}`);
+          throw new Error(`File to import: ${rawImportPath} not found. Import origin: ${inputFile.getDisplayPath()}`);
         }else{
           return parsed;
         }
@@ -183,7 +184,7 @@ class SassCompiler extends MultiFileCachingCompiler {
           done({ contents: allFiles.get(path).getContentsAsString()});
         }
       }catch(e){
-        return done({file:importPath});
+        return done(e);
       }
 
     }
