@@ -19,6 +19,9 @@ Package.registerBuildPlugin({
 Package.onUse(function (api) {
   api.versionsFrom("1.2.0.1");
   api.use('isobuild:compiler-plugin@1.0.0');
+  api.use('caching-compiler@1.0.0');
+  api.use('ecmascript@0.1.5');
+  api.use('underscore@1.0.4');
 });
 
 Package.on_test(function (api) {
