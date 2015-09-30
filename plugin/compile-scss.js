@@ -77,41 +77,59 @@ class SassCompiler extends MultiFileCachingCompiler {
 
     //Handles omissions of the extension and underscore prefix
     function getRealImportPath(importPath){
+      //Save for error message if not found
       const rawImportPath = importPath;
 
+      //Make cross-platform consistent
       importPath = convertToStandardPath(importPath);
-
-      //If the referenced file has no extension, add the extension of the parent file.
-      if(! importPath.match(/.s(a|c)ss$/)){
-        importPath += '.'+inputFile.getExtension();
-      }
 
       //Absolute file
       const isAbsolute = importPath[0] === '/';
-      if (isAbsolute) {
-        if(!fileExists(importPath)){
-          importPath = addUnderscore(importPath);
-          if(!fileExists(importPath)){
-            throw new Error(`File to import: ${rawImportPath} not found. Import origin: ${inputFile.getDisplayPath()}`);
-          }
-        }
-        return {absolute:true,packageName:true,pathInPackage:importPath};
+
+      if(! isAbsolute){
+        var parsed = parseImportPath(importPath, path.dirname(inputFile.getPathInPackage()));
+        importPath = parsed.pathInPackage;
       }
 
-      //Relative file
-      const parsed = parseImportPath(importPath, path.dirname(inputFile.getPathInPackage()));
-      var absolutePath = meteorImportPath(parsed);
-      if (! allFiles.has(absolutePath)) {
-        parsed.pathInPackage = addUnderscore(parsed.pathInPackage);
-        absolutePath = meteorImportPath(parsed);
-        if(!allFiles.has(absolutePath)){
-          throw new Error(`File to import: ${rawImportPath} not found. Import origin: ${inputFile.getDisplayPath()}`);
-        }else{
-          return parsed;
+      //SASS has a whole range of possible import files from one import statement, try each of them
+      const possibleFiles = [];
+
+      //If the referenced file has no extension, try possible extensions, starting with extension of the parent file.
+      let possibleExtensions = ['scss','sass','css'];
+
+      if(! importPath.match(/\.s?(a|c)ss$/)){
+        possibleExtensions = [inputFile.getExtension()].concat(_.without(possibleExtensions,inputFile.getExtension()));
+        for(const extension of possibleExtensions){
+          possibleFiles.push(importPath+'.'+extension);
         }
       }else{
-        return parsed;
+        possibleFiles.push(importPath);
       }
+
+      //Try files prefixed with underscore
+      for(const possibleFile of possibleFiles){
+        if(! self.hasUnderscore(possibleFile)){
+          possibleFiles.push(addUnderscore(possibleFile));
+        }
+      }
+
+      //Try if one of the possible files exists
+      for(const possibleFile of possibleFiles){
+        if(isAbsolute){
+          if(fileExists(possibleFile)){
+            return {absolute:true,packageName:true,pathInPackage:possibleFile};
+          }
+        }else{
+          parsed.pathInPackage = possibleFile;
+          if(allFiles.has(meteorImportPath(parsed))){
+            return parsed;
+          }
+        }
+      }
+
+      //Nothing found...
+      throw new Error(`File to import: ${rawImportPath} not found. Import origin: ${inputFile.getDisplayPath()}`);
+
     }
 
     //Given an imported sass path, return package name and path in the package
@@ -225,6 +243,7 @@ class SassCompiler extends MultiFileCachingCompiler {
       sourceMapEmbed:    false,
       sourceComments:    false,
       sourceMapRoot: '.',
+      indentedSyntax : inputFile.getExtension() === 'sass',
       outFile: '.'+inputFile.getBasename(),
       importer: importer,
       includePaths:      []
@@ -268,5 +287,3 @@ class SassCompiler extends MultiFileCachingCompiler {
     });
   }
 }
-
-
