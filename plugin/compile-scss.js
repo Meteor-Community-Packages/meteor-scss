@@ -70,9 +70,6 @@ class SassCompiler extends MultiFileCachingCompiler {
 
   compileOneFile(inputFile, allFiles) {
 
-
-    //console.log("---COMPILE",inputFile.getPackageName(),inputFile.getPathInPackage());
-
     const referencedImportPaths = [];
 
     const self = this;
@@ -135,7 +132,6 @@ class SassCompiler extends MultiFileCachingCompiler {
       //Try if one of the possible files exists
       for(const possibleFile of possibleFiles){
         if((isAbsolute && fileExists(possibleFile)) || (!isAbsolute && allFiles.has(possibleFile))){
-            //console.log("----------------CALCULATED",possibleFile);
             return {absolute:isAbsolute,path:possibleFile};
         }
       }
@@ -172,17 +168,8 @@ class SassCompiler extends MultiFileCachingCompiler {
         importPath = importPath.substr(accPosition,importPath.length);
       }
 
-      //console.log("-----IMPORT CALLED");
-      //console.log("-------BASE",inputFile.getDisplayPath());
-      //console.log("----------PREV",prev);
-      //console.log("-------------IMPORT URL",url);
-      //console.log("-------------IMPORT PATH",importPath);
-
-
       try{
         const parsed = getRealImportPath(importPath);
-
-        //console.log();
         if (parsed.absolute) {
           sourceMapPaths.push(parsed.path);
           done({ contents: fs.readFileSync(parsed.path, 'utf8')});
@@ -232,12 +219,7 @@ class SassCompiler extends MultiFileCachingCompiler {
     //Start fix sourcemap references
     if (output.map) {
       const map = JSON.parse(output.map.toString('utf-8'));
-
-      //console.log("SOURCEMAP FILES FOR"+inputFile.getPackageName()+"/"+inputFile.getPathInPackage());
-      //console.log(map.sources);
       map.sources = sourceMapPaths;
-      //console.log("MODIFIED",map.sources);
-      //console.log();
       output.map = map;
     }
     //End fix sourcemap references
