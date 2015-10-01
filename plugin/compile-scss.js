@@ -71,25 +71,54 @@ class SassCompiler extends MultiFileCachingCompiler {
   compileOneFile(inputFile, allFiles) {
 
 
+    console.log("---COMPILE",inputFile.getPackageName(),inputFile.getPathInPackage());
+
     const referencedImportPaths = [];
 
     const self = this;
 
-    //Handles omissions of the extension and underscore prefix
-    function getRealImportPath(importPath){
-      //Save for error message if not found
-      const rawImportPath = importPath;
-
-      //Make cross-platform consistent
-      importPath = convertToStandardPath(importPath);
-
-      //Absolute file
-      const isAbsolute = importPath[0] === '/';
-
-      if(! isAbsolute){
-        var parsed = parseImportPath(importPath, path.dirname(inputFile.getPathInPackage()));
-        importPath = parsed.pathInPackage;
+    //Handle deprecation of fs.existsSYnc
+    //XXX: remove when meteor is fully on node 4+
+    function fileExists(file){
+      if(fs.accessSync){
+        try{
+          fs.accessSync(file,fs.R_OK);
+        }catch(e){
+          return false;
+        }
+        return true;
+      }else{
+        return fs.existsSync(file);
       }
+    }
+
+    function addUnderscore(file){
+      if(!self.hasUnderscore(file)){
+        file = path.join(path.dirname(file),'_'+path.basename(file));
+      }
+      return file;
+    }
+
+    const getRealImportPath = function(importPath,prev){
+      const rawImportPath = importPath;
+      var isAbsolute = false;
+
+      if(importPath[0] === '/'){
+        isAbsolute = true;
+      }else if (importPath[0] !== '{'){
+        prev = path.dirname(prev);
+
+        let accPosition = prev.indexOf('{');
+        if(accPosition > -1){
+          prev = prev.substr(accPosition,prev.length);
+        }else{
+          prev = path.join('{' + (inputFile.getPackageName() || '') + '}/' + path.dirname(inputFile.getPathInPackage()),prev);
+        }
+
+        importPath = path.join(prev,importPath);
+      }
+
+      console.log("----------------CALCULATED",importPath);
 
       //SASS has a whole range of possible import files from one import statement, try each of them
       const possibleFiles = [];
@@ -115,118 +144,33 @@ class SassCompiler extends MultiFileCachingCompiler {
 
       //Try if one of the possible files exists
       for(const possibleFile of possibleFiles){
-        if(isAbsolute){
-          if(fileExists(possibleFile)){
-            return {absolute:true,packageName:true,pathInPackage:possibleFile};
-          }
-        }else{
-          parsed.pathInPackage = possibleFile;
-          if(allFiles.has(meteorImportPath(parsed))){
-            return parsed;
-          }
+        if((isAbsolute && fileExists(possibleFile)) || (!isAbsolute && allFiles.has(possibleFile))){
+            return {absolute:isAbsolute,path:possibleFile};
         }
       }
 
       //Nothing found...
-      throw new Error(`File to import: ${rawImportPath} not found. Import origin: ${inputFile.getDisplayPath()}`);
+      throw new Error(`File to import: ${rawImportPath} not found. Import origin: ${prev}`);
 
-    }
-
-    //Given an imported sass path, return package name and path in the package
-    //Can handle package references like {packagename}/pathInPackage, local paths and absolute paths
-    function parseImportPath(filePath, importerDir) {
-      if (! filePath) {
-        throw new Error('filePath is undefined');
-      }
-
-      //A. If this is not an imported file, we can get it directly from meteor build system
-      if (filePath === inputFile.getPathInPackage()) {
-        return {
-          packageName: inputFile.getPackageName() || '',
-          pathInPackage: inputFile.getPathInPackage()
-        };
-      }
-
-      //B. Imported file: relative reference
-      if (! filePath.match(/^\{.*\}\//)) {
-        if (! importerDir) {
-          return { packageName: inputFile.getPackageName() || '',
-            pathInPackage: filePath };
-        }
-
-        // relative path in the same package
-        const parsedImporter = parseImportPath(importerDir, null);
-
-        // resolve path if it is absolute or relative
-        const importPath =
-          (filePath[0] === '/') ? filePath :
-            path.join(parsedImporter.pathInPackage, filePath);
-
-        return {
-          packageName: parsedImporter.packageName,
-          pathInPackage: importPath
-        };
-      }
-
-      //C. Imported file: package reference (e.g. {packagename}/file)
-      const match = /^\{(.*)\}\/(.*)$/.exec(filePath);
-      if (! match) { return null; }
-
-      const [ignored, packageName, pathInPackage] = match;
-      return {packageName, pathInPackage};
-    }
-
-    //Inverse of 'parseImportPath'
-    //Given a package name and the path in the package, return the import path as {packagename}/pathInPackage
-    function meteorImportPath(parsed) {
-      return '{' + parsed.packageName + '}/' + parsed.pathInPackage;
-    }
-
-    //Handle deprecation of fs.existsSYnc
-    //XXX: remove when meteor is fully on node 4+
-    function fileExists(file){
-      if(fs.accessSync){
-        try{
-          fs.accessSync(file,fs.R_OK);
-        }catch(e){
-          return false;
-        }
-        return true;
-      }else{
-        return fs.existsSync(file);
-      }
-    }
-
-    function addUnderscore(file){
-      if(!self.hasUnderscore(file)){
-        file = path.join(path.dirname(file),'_'+path.basename(file));
-      }
-      return file;
-    }
-
-    function absoluteImportPath (filePath) {
-      const parsed = getRealImportPath(filePath);
-
-      if (! parsed.packageName) {
-        return parsed.pathInPackage;
-      }else{
-        return `packages/${parsed.packageName}/${parsed.pathInPackage}`;
-      }
     }
 
     //Handle import statements found by the sass compiler, used to handle cross-package imports
     const importer = function(importPath,prev,done){
 
+      console.log("-----IMPORT CALLED");
+      console.log("-------BASE",inputFile.getDisplayPath());
+      console.log("----------PREV",prev,path.dirname(prev));
+      console.log("-------------IMPORT PATH",importPath);
+
+
       try{
-        const parsed = getRealImportPath(importPath);
+        const parsed = getRealImportPath(importPath,prev);
+        console.log();
         if (parsed.absolute) {
-          //referencedImportPaths.push(parsed.pathInPackage);
-          done({ contents: fs.readFileSync(parsed.pathInPackage, 'utf8')});
-          return ;
+          done({ contents: fs.readFileSync(parsed.path, 'utf8')});
         }else{
-          const path = meteorImportPath(parsed);
-          referencedImportPaths.push(path);
-          done({ contents: allFiles.get(path).getContentsAsString()});
+          referencedImportPaths.push(parsed.path);
+          done({ contents: allFiles.get(parsed.path).getContentsAsString()});
         }
       }catch(e){
         return done(e);
@@ -270,7 +214,10 @@ class SassCompiler extends MultiFileCachingCompiler {
     if (output.map) {
       const map = JSON.parse(output.map.toString('utf-8'));
       const packageName = inputFile.getPackageName();
-      map.sources = map.sources.map(function(filePath){return absoluteImportPath(filePath)});
+      //console.log("SOURCEMAP FILES FOR"+inputFile.getPackageName()+"/"+inputFile.getPathInPackage());
+      map.sources = map.sources.map(function(filePath){/*console.log(filePath);*/});
+      //console.log();
+      //console.log();
       output.map = map;
     }
     //End fix sourcemap references
