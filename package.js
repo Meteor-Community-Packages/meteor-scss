@@ -1,6 +1,6 @@
 Package.describe({
   summary: 'Style with attitude. Sass and SCSS support for Meteor.js (with autoprefixer and sourcemaps).',
-  version: "3.3.3_2",
+  version: "3.3.3_3",
   git: "https://github.com/fourseven/meteor-scss.git",
   name: "fourseven:scss"
 });
