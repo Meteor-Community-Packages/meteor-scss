@@ -71,11 +71,14 @@ class SassCompiler extends MultiFileCachingCompiler {
   compileOneFile(inputFile, allFiles) {
 
 
-    console.log("---COMPILE",inputFile.getPackageName(),inputFile.getPathInPackage());
+    //console.log("---COMPILE",inputFile.getPackageName(),inputFile.getPathInPackage());
 
     const referencedImportPaths = [];
 
     const self = this;
+
+    var totalImportPath = [];
+    var sourceMapPaths = ['.'+inputFile.getDisplayPath()];
 
     //Handle deprecation of fs.existsSYnc
     //XXX: remove when meteor is fully on node 4+
@@ -99,26 +102,13 @@ class SassCompiler extends MultiFileCachingCompiler {
       return file;
     }
 
-    const getRealImportPath = function(importPath,prev){
+    const getRealImportPath = function(importPath){
       const rawImportPath = importPath;
       var isAbsolute = false;
 
       if(importPath[0] === '/'){
         isAbsolute = true;
-      }else if (importPath[0] !== '{'){
-        prev = path.dirname(prev);
-
-        let accPosition = prev.indexOf('{');
-        if(accPosition > -1){
-          prev = prev.substr(accPosition,prev.length);
-        }else{
-          prev = path.join('{' + (inputFile.getPackageName() || '') + '}/' + path.dirname(inputFile.getPathInPackage()),prev);
-        }
-
-        importPath = path.join(prev,importPath);
       }
-
-      console.log("----------------CALCULATED",importPath);
 
       //SASS has a whole range of possible import files from one import statement, try each of them
       const possibleFiles = [];
@@ -145,31 +135,60 @@ class SassCompiler extends MultiFileCachingCompiler {
       //Try if one of the possible files exists
       for(const possibleFile of possibleFiles){
         if((isAbsolute && fileExists(possibleFile)) || (!isAbsolute && allFiles.has(possibleFile))){
+            //console.log("----------------CALCULATED",possibleFile);
             return {absolute:isAbsolute,path:possibleFile};
         }
       }
 
       //Nothing found...
-      throw new Error(`File to import: ${rawImportPath} not found. Import origin: ${prev}`);
+      throw new Error(`File to import: ${rawImportPath} not found in file: ${totalImportPath[totalImportPath.length-2]}`);
 
     }
 
     //Handle import statements found by the sass compiler, used to handle cross-package imports
-    const importer = function(importPath,prev,done){
+    const importer = function(url,prev,done){
 
-      console.log("-----IMPORT CALLED");
-      console.log("-------BASE",inputFile.getDisplayPath());
-      console.log("----------PREV",prev,path.dirname(prev));
-      console.log("-------------IMPORT PATH",importPath);
+      if(!totalImportPath.length){
+        totalImportPath.push(prev);
+      }
+
+      if(totalImportPath[totalImportPath.length] !== prev){
+        //backtracked, splice of part we don't need anymore
+        // (XXX: this might give problems when multiple parts of the path have the same name)
+        totalImportPath.splice(totalImportPath.indexOf(prev)+1,totalImportPath.length);
+      }
+
+      var importPath = url;
+      for(var i = totalImportPath.length-1; i >= 0; i--){
+        if(importPath[0] === '/' || importPath[0] === '{'){
+          break;
+        }
+        importPath = path.join(path.dirname(totalImportPath[i]),importPath);
+      }
+      totalImportPath.push(url);
+
+      let accPosition = importPath.indexOf('{');
+      if(accPosition > -1){
+        importPath = importPath.substr(accPosition,importPath.length);
+      }
+
+      //console.log("-----IMPORT CALLED");
+      //console.log("-------BASE",inputFile.getDisplayPath());
+      //console.log("----------PREV",prev);
+      //console.log("-------------IMPORT URL",url);
+      //console.log("-------------IMPORT PATH",importPath);
 
 
       try{
-        const parsed = getRealImportPath(importPath,prev);
-        console.log();
+        const parsed = getRealImportPath(importPath);
+
+        //console.log();
         if (parsed.absolute) {
+          sourceMapPaths.push(parsed.path);
           done({ contents: fs.readFileSync(parsed.path, 'utf8')});
         }else{
           referencedImportPaths.push(parsed.path);
+          sourceMapPaths.push(decodeFilePath(parsed.path));
           done({ contents: allFiles.get(parsed.path).getContentsAsString()});
         }
       }catch(e){
@@ -213,10 +232,11 @@ class SassCompiler extends MultiFileCachingCompiler {
     //Start fix sourcemap references
     if (output.map) {
       const map = JSON.parse(output.map.toString('utf-8'));
-      const packageName = inputFile.getPackageName();
+
       //console.log("SOURCEMAP FILES FOR"+inputFile.getPackageName()+"/"+inputFile.getPathInPackage());
-      map.sources = map.sources.map(function(filePath){/*console.log(filePath);*/});
-      //console.log();
+      //console.log(map.sources);
+      map.sources = sourceMapPaths;
+      //console.log("MODIFIED",map.sources);
       //console.log();
       output.map = map;
     }
@@ -233,4 +253,17 @@ class SassCompiler extends MultiFileCachingCompiler {
       sourceMap:  compileResult.sourceMap
     });
   }
+}
+
+function decodeFilePath (filePath) {
+  const match = filePath.match(/{(.*)}\/(.*)$/);
+  if (! match)
+    throw new Error('Failed to decode Less path: ' + filePath);
+
+  if (match[1] === '') {
+    // app
+    return match[2];
+  }
+
+  return 'packages/' + match[1] + '/' + match[2];
 }
