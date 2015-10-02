@@ -12,7 +12,7 @@ Package.registerBuildPlugin({
     'plugin/compile-scss.js'
   ],
   npmDependencies: {
-    'node-sass': '3.4.0-beta1'
+    'node-sass': '3.3.3'
   }
 });
 
@@ -29,9 +29,13 @@ Package.on_test(function (api) {
 
   api.use(['fourseven:scss']);
 
-  api.add_files(['test/scss_tests.html', 'test/scss_tests.js'], 'client');
-  api.add_files(['test/scss_tests.scss'], 'client',  {
-    testOptions: {
-    }
-  });
+  api.add_files(['test/tests.html', 'test/tests.js'], 'client');
+
+  api.add_files(['test/scss/main.scss'], 'client');
+  api.add_files(['test/scss/_partial.scss'], 'client');
+
+  //UNCOMMENT THIS BLOCK
+  //FAILING -- TRYING TO COMPILE SASS WITH SCSS COMPILER
+  // api.add_files(['test/sass/main.sass'], 'client');
+  // api.add_files(['test/sass/_partial.sass'], 'client');
 });

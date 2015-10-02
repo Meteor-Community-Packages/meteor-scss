@@ -6,11 +6,9 @@ renderToDiv = function(comp) {
 Tinytest.add("sass - presence", function(test) {
   renderToDiv(Template.test_p_tag);
 
-  var p = $('.sass-dashy-left-border-transition');
-
+  var p = $('#sample-paragraph');
+  
   test.equal(p.css('border-left-style'), "dashed");
-
-  // test @import
   test.equal(p.css('border-right-style'), "dotted");
 
   p.remove();
