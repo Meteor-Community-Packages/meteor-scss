@@ -28,6 +28,7 @@ Package.onUse(function (api) {
   api.use('fourseven:scss');
   ...
 });
+```
 
 ## Usage
 Without any additional configuration after installation, this package automatically finds all `.scss` and `.sass` files in your project, compiles them with [node-sass](https://github.com/sass/node-sass), and includes the resulting CSS in the application bundle that Meteor sends to the client. The files can be anywhere in your project.
