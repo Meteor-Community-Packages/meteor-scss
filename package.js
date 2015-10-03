@@ -1,6 +1,6 @@
 Package.describe({
   summary: 'Style with attitude. Sass and SCSS support for Meteor.js (with autoprefixer and sourcemaps).',
-  version: "3.3.3_3",
+  version: "3.4.0-beta1",
   git: "https://github.com/fourseven/meteor-scss.git",
   name: "fourseven:scss"
 });
@@ -12,7 +12,7 @@ Package.registerBuildPlugin({
     'plugin/compile-scss.js'
   ],
   npmDependencies: {
-    'node-sass': '3.3.3'
+    'node-sass': '3.4.0-beta1'
   }
 });
 
@@ -31,11 +31,13 @@ Package.on_test(function (api) {
 
   api.add_files(['test/tests.html', 'test/tests.js'], 'client');
 
+  // Test for .scss
   api.add_files(['test/scss/main.scss'], 'client');
   api.add_files(['test/scss/_partial.scss'], 'client');
 
-  //UNCOMMENT THIS BLOCK
-  //FAILING -- TRYING TO COMPILE SASS WITH SCSS COMPILER
-  // api.add_files(['test/sass/main.sass'], 'client');
-  // api.add_files(['test/sass/_partial.sass'], 'client');
+  // Tests for .sass
+  // Enable when `indentedSyntax` is fixed in node-sass
+  // Also see `package.js`
+  //api.add_files(['test/sass/main.sass'], 'client');
+  //api.add_files(['test/sass/_partial.sass'], 'client');
 });
