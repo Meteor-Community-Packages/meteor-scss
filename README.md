@@ -68,7 +68,7 @@ Importing styles from a different package:
 
 .my-button {
   // use the styles imported from a package
-  .pretty-button;
+  @extend .pretty-button;
 }
 ```
 
