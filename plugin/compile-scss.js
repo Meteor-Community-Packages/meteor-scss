@@ -203,6 +203,16 @@ class SassCompiler extends MultiFileCachingCompiler {
 
     options.data = inputFile.getContentsAsBuffer().toString('utf8');
 
+    //If the file is empty, options.data is an empty string
+    // In that case options.file will be used by node-sass,
+    // which it can not read since it will contain a meteor package or app reference '{}'
+    // This is one workaround, another one would be to not set options.file, in which case the importer 'prev' will be 'stdin'
+    // However, this would result in problems if a file named stdín.scss would exist.
+    // Not the most elegant of solutions, but it works.
+    if(!options.data.trim()){
+      options.data = "$fakevariable : blue;"
+    }
+
     let output;
     try {
       sass.render(options,f.resolver());
