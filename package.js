@@ -17,27 +17,42 @@ Package.registerBuildPlugin({
 });
 
 Package.onUse(function (api) {
-  api.versionsFrom("1.2.0.1");
+  api.versionsFrom("1.2.0.2");
   api.use('isobuild:compiler-plugin@1.0.0');
 });
 
 Package.on_test(function (api) {
   api.use(['test-helpers',
-           'tinytest',
-           'jquery',
-           'templating']);
+           'tinytest']);
 
   api.use(['fourseven:scss']);
 
-  api.add_files(['test/tests.html', 'test/tests.js'], 'client');
-
-  // Test for .scss
-  api.add_files(['test/scss/main.scss'], 'client');
-  api.add_files(['test/scss/_partial.scss'], 'client');
+  // Tests for .scss
+  api.addFiles([
+    'test/scss/_emptyimport.scss',
+    'test/scss/_not-included.scss',
+    'test/scss/_top.scss',
+    'test/scss/_top3.scss',
+    'test/scss/empty.scss',
+    'test/scss/dir/_in-dir.scss',
+    'test/scss/dir/_in-dir2.scss',
+    'test/scss/dir/root.scss',
+    'test/scss/dir/subdir/_in-subdir.scss']);
+  api.addFiles('test/scss/top2.scss', 'client', {isImport: true});
 
   // Tests for .sass
-  // Enable when `indentedSyntax` is fixed in node-sass
-  // Also see `package.js`
-  //api.add_files(['test/sass/main.sass'], 'client');
-  //api.add_files(['test/sass/_partial.sass'], 'client');
+  //api.addFiles([
+  //  'test/sass/_emptyimport.sass',
+  //  'test/sass/_not-included.sass',
+  //  'test/sass/_top.sass',
+  //  'test/sass/_top3.sass',
+  //  'test/sass/empty.sass',
+  //  'test/sass/dir/_in-dir.sass',
+  //  'test/sass/dir/_in-dir2.sass',
+  //  'test/sass/dir/root.sass',
+  //  'test/sass/dir/subdir/_in-subdir.sass']);
+  //api.addFiles('test/sass/top2.sass', 'client', {isImport: true});
+
+  api.addFiles('tests.js', 'client');
+
 });
