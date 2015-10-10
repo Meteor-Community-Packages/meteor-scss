@@ -28,24 +28,30 @@ Package.on_test(function (api) {
   api.use(['fourseven:scss']);
 
   // Tests for .scss
-  api.addFiles(['tests/scss/_top.scss',
-    'tests/scss/_top3.scss',
-    'tests/scss/_not-included.scss',
-    'tests/scss/dir/_in-dir.scss',
-    'tests/scss/dir/_in-dir2.scss',
-    'tests/scss/dir/root.scss',
-    'tests/scss/dir/subdir/_in-subdir.scss']);
-  api.addFiles('tests/scss/top2.scss', 'client', {isImport: true});
+  api.addFiles([
+    'test/scss/_emptyimport.scss',
+    'test/scss/_not-included.scss',
+    'test/scss/_top.scss',
+    'test/scss/_top3.scss',
+    'test/scss/empty.scss',
+    'test/scss/dir/_in-dir.scss',
+    'test/scss/dir/_in-dir2.scss',
+    'test/scss/dir/root.scss',
+    'test/scss/dir/subdir/_in-subdir.scss']);
+  api.addFiles('test/scss/top2.scss', 'client', {isImport: true});
 
   // Tests for .sass
-  api.addFiles(['tests/sass/_top.sass',
-    'tests/sass/_top3.sass',
-    'tests/sass/_not-included.sass',
-    'tests/sass/dir/_in-dir.sass',
-    'tests/sass/dir/_in-dir2.sass',
-    'tests/sass/dir/root.sass',
-    'tests/sass/dir/subdir/_in-subdir.sass']);
-  api.addFiles('tests/sass/top2.sass', 'client', {isImport: true});
+  //api.addFiles([
+  //  'test/sass/_emptyimport.sass',
+  //  'test/sass/_not-included.sass',
+  //  'test/sass/_top.sass',
+  //  'test/sass/_top3.sass',
+  //  'test/sass/empty.sass',
+  //  'test/sass/dir/_in-dir.sass',
+  //  'test/sass/dir/_in-dir2.sass',
+  //  'test/sass/dir/root.sass',
+  //  'test/sass/dir/subdir/_in-subdir.sass']);
+  //api.addFiles('test/sass/top2.sass', 'client', {isImport: true});
 
   api.addFiles('tests.js', 'client');
 

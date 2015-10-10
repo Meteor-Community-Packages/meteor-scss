@@ -1,9 +1,5 @@
 $scss-el1-style: dotted;
 
-/* Test that package-relative imports work from within a
- * package-relative-imported file */
-@import "/test/scss/_top3";
-
 @import "top3";
 @import "emptyimport.scss";
 
