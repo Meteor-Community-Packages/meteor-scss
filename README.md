@@ -8,8 +8,12 @@ Version 3.3.3 is built for Meteor 1.2, and has been largely re-written. Not all 
 These are on by default.
 
 ### Autoprefixer
-As of Meteor 1.2 autoprefixer should preferably be installed as a separate plugin, and is no longer included with this package.
-However, note that due to [certain limitations](https://github.com/meteor/meteor/issues/5219) of the current Meteor build system, no autoprefix plugin is available at this moment.
+As of Meteor 1.2 autoprefixer should preferably be installed as a separate plugin. You can do so by running:
+
+```
+meteor remove standard-minifiers
+meteor add seba:minifiers-autoprefixer
+```
 
 ## Installation
 
