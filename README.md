@@ -69,7 +69,7 @@ following syntax.
 Importing styles from a different package:
 
 ```scss
-@import "{my-package:pretty-buttons}/buttons/_styles.scss"
+@import "{my-package:pretty-buttons}/buttons/_styles.scss";
 
 .my-button {
   // use the styles imported from a package
@@ -80,7 +80,7 @@ Importing styles from a different package:
 Importing styles from the target app:
 
 ```scss
-@import "{}/client/styles/imports/colors.scss"
+@import "{}/client/styles/imports/colors.scss";
 
 .my-nav {
   // use a color from the app style pallete
