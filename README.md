@@ -2,7 +2,8 @@
 This is a Sass build plugin for Meteor. It compiles Sass files with node-sass and it has options to control the load order of Sass files and use Autoprefixer on the generated CSS.
 
 ## Meteor 1.2
-Version 3.3.3 is built for Meteor 1.2, and has been largely re-written. Not all older features are present, but most will return (pull requests welcome).
+Version 3.4.1 is built for Meteor 1.2, and has been largely re-written. Not all older features are present, but most will return (pull requests welcome).
+**Note that due to a bug in libsass, there is currently no support for the old, indented sass syntax**
 
 ### Sourcemaps
 These are on by default.
