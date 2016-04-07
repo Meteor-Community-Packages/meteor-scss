@@ -43,12 +43,13 @@ Without any additional configuration after installation, this package automatica
 There are two different types of files recognized by this package:
 
 - Sass sources (all `*.scss` and `*.sass` files that are not imports)
-- Sass imports/partials:
+- Sass imports/partials, which are:
   * files that are prefixed with an underscore `_`
   * marked as `isImport: true` in the package's `package.js` file:
     `api.addFiles('x.scss', 'client', {isImport: true})`
+  * Starting from Meteor 1.3, all files in a directory named `imports/`
 
-The source files are compiled automatically. The imports are not loaded by
+The source files are compiled automatically (eagerly loaded). The imports are not loaded by
 themselves; you need to import them from one of the source files to use them.
 
 The imports are intended to keep shared mixins and variables for your project,
