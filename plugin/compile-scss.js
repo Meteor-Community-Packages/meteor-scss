@@ -61,7 +61,9 @@ class SassCompiler extends MultiFileCachingCompiler {
     if (fileOptions.hasOwnProperty('isImport')) {
       return !fileOptions.isImport;
     }
-    return !this.hasUnderscore(inputFile.getPathInPackage());
+
+    const pathInPackage = inputFile.getPathInPackage();
+    return !(this.hasUnderscore(pathInPackage) || /(?:^|\/)imports\//.test(pathInPackage));
   }
 
   hasUnderscore(file){

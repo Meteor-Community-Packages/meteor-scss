@@ -13,12 +13,12 @@ As of Meteor 1.2 autoprefixer should preferably be installed as a separate plugi
 
 ```
 meteor remove standard-minifiers
-meteor add seba:minifiers-autoprefixer
+meteor add seba:minifiers-autoprefixer@0.0.2
 ```
 
 In a Meteor 1.3 project, do the same by,
 ```
-meteor remove standard-minifier-js standard-minifier-css
+meteor remove standard-minifier-css
 meteor add seba:minifiers-autoprefixer
 ```
 
