@@ -16,6 +16,12 @@ meteor remove standard-minifiers
 meteor add seba:minifiers-autoprefixer
 ```
 
+In a Meteor 1.3 project, do the same by,
+```
+meteor remove standard-minifier-js standard-minifier-css
+meteor add seba:minifiers-autoprefixer
+```
+
 ## Installation
 
 Install using Meteor's package management system:
