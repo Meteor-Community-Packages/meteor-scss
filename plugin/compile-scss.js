@@ -63,7 +63,7 @@ class SassCompiler extends MultiFileCachingCompiler {
     }
 
     const pathInPackage = inputFile.getPathInPackage();
-    return !(this.hasUnderscore(pathInPackage) || /(?:^|\/)imports\//.test(pathInPackage));
+    return !this.hasUnderscore(pathInPackage);
   }
 
   hasUnderscore(file){
