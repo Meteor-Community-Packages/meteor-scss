@@ -1,23 +1,23 @@
 Package.describe({
-  summary: 'Style with attitude. Sass and SCSS support for Meteor.js (with autoprefixer and sourcemaps).',
-  version: "3.4.3",
+  summary: 'Style with attitude. Sass and SCSS support for Meteor.js.',
+  version: "3.8.0_1",
   git: "https://github.com/fourseven/meteor-scss.git",
   name: "fourseven:scss"
 });
 
 Package.registerBuildPlugin({
   name: "compileScssBatch",
-  use: ['caching-compiler@1.0.0', 'ecmascript@0.1.5', 'underscore@1.0.4'],
+  use: ['caching-compiler@1.0.5_1', 'ecmascript@0.4.6_1', 'underscore@1.0.9'],
   sources: [
     'plugin/compile-scss.js'
   ],
   npmDependencies: {
-    'node-sass': '3.4.2'
+    'node-sass': '3.8.0'
   }
 });
 
 Package.onUse(function (api) {
-  api.versionsFrom("1.2.0.2");
+  api.versionsFrom("1.3.4.1");
   api.use('isobuild:compiler-plugin@1.0.0');
 });
 
