@@ -1,29 +1,6 @@
 # Sass for Meteor
 This is a Sass build plugin for Meteor. It compiles Sass files with node-sass and it has options to control the load order of Sass files and use Autoprefixer on the generated CSS.
 
-## Meteor 1.2+
-As of version 3.4, we support Meteor 1.2 and up, and our codebase has been largely re-written. Not all older features are present, but most will return (pull requests welcome).
-**Note that due to a bug in libsass, there is currently no support for the old, indented sass syntax**
-
-Note: Due to same changes between Meteor 1.3.0-1.3.1 and Meteor 1.3.2+, Users of Meteor 1.3.0 or 1.3.1 are advised to use version 3.4.2 of `fourseven:scss`
-
-### Sourcemaps
-These are on by default.
-
-### Autoprefixer
-As of Meteor 1.2 autoprefixer should preferably be installed as a separate plugin. You can do so by running:
-
-```
-meteor remove standard-minifiers
-meteor add seba:minifiers-autoprefixer@0.0.2
-```
-
-In a Meteor 1.3+ project, do the same by,
-```
-meteor remove standard-minifier-css
-meteor add seba:minifiers-autoprefixer
-```
-
 ## Installation
 
 Install using Meteor's package management system:
@@ -42,6 +19,20 @@ Package.onUse(function (api) {
   ...
 });
 ```
+
+## Compatibility
+<table>
+<thead>
+<tr><th>Meteor Version</th><th>Fourseven:scss version</th></tr>
+</thead>
+<tbody>
+<tr><td>1.0 - 1.1</td><td>3.2.0</td></tr>
+<tr><td>1.2 - 1.3.1</td><td>3.4.2</td></tr>
+<tr><td>1.3.2+</td><td>3.8.0</td></tr>
+</tbody>
+</table>
+
+**Note that due to a bug in libsass, there is currently no support for the old, indented sass syntax**
 
 ## Usage
 Without any additional configuration after installation, this package automatically finds all `.scss` and `.sass` files in your project, compiles them with [node-sass](https://github.com/sass/node-sass), and includes the resulting CSS in the application bundle that Meteor sends to the client. The files can be anywhere in your project.
@@ -96,6 +87,23 @@ Importing styles from the target app:
   // use a color from the app style pallete
   background-color: @primary-branding-color;
 }
+```
+
+### Sourcemaps
+These are on by default.
+
+### Autoprefixer
+As of Meteor 1.2 autoprefixer should preferably be installed as a separate plugin. You can do so by running:
+
+```
+meteor remove standard-minifiers
+meteor add seba:minifiers-autoprefixer@0.0.2
+```
+
+In a Meteor 1.3+ project, do the same by running:
+```
+meteor remove standard-minifier-css
+meteor add seba:minifiers-autoprefixer
 ```
 
 ## LibSass vs Ruby Sass
