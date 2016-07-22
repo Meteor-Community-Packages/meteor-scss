@@ -23,7 +23,7 @@ Package.onUse(function (api) {
 ## Compatibility
 <table>
 <thead>
-<tr><th>Meteor Version</th><th>Fourseven:scss version</th></tr>
+<tr><th>Meteor Version</th><th>Recommended fourseven:scss version</th></tr>
 </thead>
 <tbody>
 <tr><td>1.0 - 1.1</td><td>3.2.0</td></tr>
