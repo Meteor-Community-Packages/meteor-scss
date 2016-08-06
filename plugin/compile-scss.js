@@ -82,9 +82,9 @@ class SassCompiler extends MultiFileCachingCompiler {
     //Handle deprecation of fs.existsSYnc
     //XXX: remove when meteor is fully on node 4+
     function fileExists(file){
-      if(fs.accessSync){
+      if(fs.statSync){
         try{
-          fs.accessSync(file,fs.R_OK);
+          fs.statSync(file);
         }catch(e){
           return false;
         }
