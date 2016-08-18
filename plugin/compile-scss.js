@@ -4,6 +4,8 @@ const sass = Npm.require('node-sass');
 const Future = Npm.require('fibers/future');
 const files = Plugin.files;
 
+var includePaths;
+
 
 Plugin.registerCompiler({
   extensions: ['scss', 'sass'],
@@ -90,7 +92,24 @@ class SassCompiler extends MultiFileCachingCompiler {
         }
         return true;
       }else{
-        return fs.existsSync(file);
+        if (fs.existsSync) {
+          return fs.existsSync(file);
+        } else {
+          if (fs.statSync) {
+            var stats = fs.statSync(file);
+            if (!stats)
+              return false;
+            if (stats.isFile()) {
+              return true;
+            } else {
+              return false;
+            }
+          } else {
+            console.error('fs invalid');
+            console.log(fs);
+            throw "fs invalid";
+          }
+        }
       }
     }
 
@@ -101,11 +120,11 @@ class SassCompiler extends MultiFileCachingCompiler {
       return file;
     }
 
-    const getRealImportPath = function(importPath){
+    const getRealImportPathForOnePath = function(importPath) {
       const rawImportPath = importPath;
       var isAbsolute = false;
 
-      if(importPath[0] === '/'){
+      if (importPath[0] === '/') {
         isAbsolute = true;
       }
 
@@ -113,39 +132,84 @@ class SassCompiler extends MultiFileCachingCompiler {
       const possibleFiles = [];
 
       //If the referenced file has no extension, try possible extensions, starting with extension of the parent file.
-      let possibleExtensions = ['scss','sass','css'];
+      let possibleExtensions = ['scss', 'sass', 'css'];
 
-      if(! importPath.match(/\.s?(a|c)ss$/)){
-        possibleExtensions = [inputFile.getExtension()].concat(_.without(possibleExtensions,inputFile.getExtension()));
-        for(const extension of possibleExtensions){
-          possibleFiles.push(importPath+'.'+extension);
+      if (!importPath.match(/\.s?(a|c)ss$/)) {
+        possibleExtensions = [inputFile.getExtension()].concat(_.without(possibleExtensions, inputFile.getExtension()));
+        for (const extension of possibleExtensions) {
+          possibleFiles.push(importPath + '.' + extension);
         }
-      }else{
+      } else {
         possibleFiles.push(importPath);
       }
 
       //Try files prefixed with underscore
-      for(const possibleFile of possibleFiles){
-        if(! self.hasUnderscore(possibleFile)){
+      for (const possibleFile of possibleFiles) {
+        if (!self.hasUnderscore(possibleFile)) {
           possibleFiles.push(addUnderscore(possibleFile));
         }
       }
 
       //Try if one of the possible files exists
-      for(const possibleFile of possibleFiles){
-        if((isAbsolute && fileExists(possibleFile)) || (!isAbsolute && allFiles.has(possibleFile))){
-            return {absolute:isAbsolute,path:possibleFile};
+      for (const possibleFile of possibleFiles) {
+        if ((isAbsolute && fileExists(possibleFile)) || (!isAbsolute && allFiles.has(possibleFile))) {
+          return {absolute: isAbsolute, path: possibleFile};
+        }
+      }
+      return null;
+    };
+
+    const getRealImportPathFromIncludes = function(importPath){
+
+      // Check for scssIncludePaths.json, load contents in includePaths if it is there
+      if (!includePaths) {
+        
+        // Get the root dir of the app.  (Seems to be mass confusion on how to do this: http://stackoverflow.com/questions/16762983/reading-files-from-a-directory-inside-a-meteor-app)
+        var configPath = process.cwd().split('.meteor')[0]; // process.env.PWD;
+        var configFile = path.join(configPath, 'scssIncludePaths.json');
+        console.log('checking ' + configFile);
+
+        if (fileExists(configFile)) {
+          console.log('found scssIncludePaths.json...' + configFile);
+          var contents = fs.readFileSync(configFile, 'utf8');
+          console.log(contents);
+          try {
+            var obj = JSON.parse(contents);
+            console.log('parsed ok');
+            console.log(obj)
+            if (obj.includePaths) {
+              if (_.isArray(obj.includePaths)) {
+                includePaths = obj.includePaths;
+              } else {
+                obj.includePaths = [obj.includePaths];
+              }
+            } else {
+              includePaths = [];
+            }
+          } catch (e) {
+            var err = 'Error parsing "' + configFile + '", :' + e;
+            console.error(e);
+            throw (err);
+          }
+        } else {
+          console.log('could not find "' + configFile + '" to look for includes');
         }
       }
 
-      //Nothing found...
-      throw new Error(`File to import: ${rawImportPath} not found in file: ${totalImportPath[totalImportPath.length-2]}`);
+      for (var i=0; i<includePaths.length; i++) {
+        var possiblePath = includePaths[i];
+        var possibleFile = path.join(possiblePath, importPath);
+        console.log('checking: ' + possibleFile)
+        var found = getRealImportPathForOnePath(possibleFile);
+        if (found)
+          return found;
+      }
 
-    }
+      return null;
+    };
 
     //Handle import statements found by the sass compiler, used to handle cross-package imports
-    const importer = function(url,prev,done){
-
+    const importer = function(url,prev,done) {
       if(!totalImportPath.length){
         totalImportPath.push(prev);
       }
@@ -171,7 +235,14 @@ class SassCompiler extends MultiFileCachingCompiler {
       }
 
       try{
-        const parsed = getRealImportPath(importPath);
+        var parsed = getRealImportPathForOnePath(importPath);
+        if (!parsed) {
+          parsed = getRealImportPathFromIncludes(url);
+          if (!parsed) {
+            //Nothing found...
+            throw new Error(`File to import: ${url} not found in file: ${totalImportPath[totalImportPath.length-2]}`);
+          }
+        }
         if (parsed.absolute) {
           sourceMapPaths.push(parsed.path);
           done({ contents: fs.readFileSync(parsed.path, 'utf8')});
@@ -209,7 +280,7 @@ class SassCompiler extends MultiFileCachingCompiler {
     // In that case options.file will be used by node-sass,
     // which it can not read since it will contain a meteor package or app reference '{}'
     // This is one workaround, another one would be to not set options.file, in which case the importer 'prev' will be 'stdin'
-    // However, this would result in problems if a file named stdín.scss would exist.
+    // However, this would result in problems if a file named stdï¿½n.scss would exist.
     // Not the most elegant of solutions, but it works.
     if(!options.data.trim()){
       options.data = "$fakevariable : blue;"
