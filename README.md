@@ -34,6 +34,8 @@ Package.onUse(function (api) {
 </tbody>
 </table>
 
+Since `meteor 1.4.1+` (`fourseven:scss 3.9.0+`), we do not have prebuild binaries anymore. You are required to set up the [required toolchain](https://github.com/nodejs/node-gyp) yourselves.
+
 **Note that due to a bug in libsass, there is currently no support for the old, indented sass syntax**
 
 ## Usage
