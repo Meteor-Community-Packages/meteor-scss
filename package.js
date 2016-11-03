@@ -17,7 +17,7 @@ Package.registerBuildPlugin({
 });
 
 Package.onUse(function (api) {
-  api.versionsFrom("1.4.1");
+  api.versionsFrom("1.4.2");
   api.use('isobuild:compiler-plugin@1.0.0');
 });
 
