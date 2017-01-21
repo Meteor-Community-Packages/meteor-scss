@@ -6,9 +6,10 @@ const files = Plugin.files;
 
 
 Plugin.registerCompiler({
-  extensions: ['scss', 'sass'],
+  extensions: ['scss', 'sass', 'scss.js', 'sass.js'],
   archMatching: 'web'
 }, () => new SassCompiler());
+
 
 var toPosixPath = function (p, partialPath) {
   // Sometimes, you can have a path like \Users\IEUser on windows, and this
@@ -41,6 +42,7 @@ class SassCompiler extends MultiFileCachingCompiler {
       compilerName: 'sass',
       defaultCacheSize: 1024*1024*10
     });
+    this.customFunctionObject = {}
   }
 
   getCacheKey(inputFile) {
@@ -71,6 +73,19 @@ class SassCompiler extends MultiFileCachingCompiler {
   }
 
   compileOneFile(inputFile, allFiles) {
+    // greedily evaluate custom scss.js and sass.js files.
+    // the custom functions have to be evaluated and ready by the time node-sass is called
+    // so without a way to asynchronously change the custom functions object that was passed to node-sass
+    // there isn't any way to leverage the importer for the custom functions
+    // there's also a problem where if any custom functions files are changed, the sass files they relate to aren't recompiled.
+    if(inputFile.getExtension().match(/^(sass|scss)\.js$/)) {
+      // TODO there has to be a better way to pass these functions than calling eval
+      var customFunctions = eval(inputFile.getContentsAsString())
+      // use this.customFunctionObject and this.alreadyEvaluatedJs to hold those values
+      _.extend(this.customFunctionObject, customFunctions)
+      return null;
+    }
+
 
     const referencedImportPaths = [];
 
@@ -102,20 +117,25 @@ class SassCompiler extends MultiFileCachingCompiler {
     }
 
     const getRealImportPath = function(importPath){
+
       const rawImportPath = importPath;
       var isAbsolute = false;
+      // var isJavascript = false
 
       if(importPath[0] === '/'){
         isAbsolute = true;
       }
 
+
       //SASS has a whole range of possible import files from one import statement, try each of them
       const possibleFiles = [];
 
       //If the referenced file has no extension, try possible extensions, starting with extension of the parent file.
+      // let possibleExtensions = ['scss','sass','css', 'sass.js', 'scss.js'];
       let possibleExtensions = ['scss','sass','css'];
 
-      if(! importPath.match(/\.s?(a|c)ss$/)){
+      // if(! importPath.match(/\.(s?(a|c)ss)|((sass|scss)\.js)$/)){
+      if(! importPath.match(/\.(s?(a|c)ss)$/)) {
         possibleExtensions = [inputFile.getExtension()].concat(_.without(possibleExtensions,inputFile.getExtension()));
         for(const extension of possibleExtensions){
           possibleFiles.push(importPath+'.'+extension);
@@ -134,6 +154,10 @@ class SassCompiler extends MultiFileCachingCompiler {
       //Try if one of the possible files exists
       for(const possibleFile of possibleFiles){
         if((isAbsolute && fileExists(possibleFile)) || (!isAbsolute && allFiles.has(possibleFile))){
+            // if(possibleFile.match(/\.(sass|scss)\.js$/)){
+            //   isJavascript = true
+            // }
+            // return {absolute:isAbsolute,path:possibleFile, isJavascript: isJavascript};
             return {absolute:isAbsolute,path:possibleFile};
         }
       }
@@ -145,7 +169,6 @@ class SassCompiler extends MultiFileCachingCompiler {
 
     //Handle import statements found by the sass compiler, used to handle cross-package imports
     const importer = function(url,prev,done){
-
       if(!totalImportPath.length){
         totalImportPath.push(prev);
       }
@@ -172,14 +195,35 @@ class SassCompiler extends MultiFileCachingCompiler {
 
       try{
         const parsed = getRealImportPath(importPath);
+
+        var contents = ''
         if (parsed.absolute) {
           sourceMapPaths.push(parsed.path);
-          done({ contents: fs.readFileSync(parsed.path, 'utf8')});
-        }else{
+          contents = fs.readFileSync(parsed.path, 'utf8')
+        }
+        else {
           referencedImportPaths.push(parsed.path);
           sourceMapPaths.push(decodeFilePath(parsed.path));
-          done({ contents: allFiles.get(parsed.path).getContentsAsString()});
+
+          contents = allFiles.get(parsed.path).getContentsAsString()
         }
+
+
+        // if (parsed.isJavascript) {
+        //   var customFunctions = eval(contents)
+        //   // _.extend(self.customFunctionObject, customFunctions)
+        //   // _.extend(globalCustomFunctionObject, customFunctions)
+        //   for (var k of _.keys(customFunctions)) {
+        //     globalCustomFunctionObject[k] = customFunctions[k]
+        //   }
+        //   done({contents: ''})
+        // }
+        // else {
+        //   done({contents: contents})
+        // }
+
+        done({contents: contents})
+
       }catch(e){
         return done(e);
       }
@@ -204,6 +248,9 @@ class SassCompiler extends MultiFileCachingCompiler {
     options.file  =  this.getAbsoluteImportPath(inputFile);
 
     options.data = inputFile.getContentsAsBuffer().toString('utf8');
+
+    options.functions = this.customFunctionObject;
+
 
     //If the file is empty, options.data is an empty string
     // In that case options.file will be used by node-sass,
