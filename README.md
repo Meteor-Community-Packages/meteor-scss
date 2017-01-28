@@ -30,7 +30,7 @@ Package.onUse(function (api) {
 <tr><td>1.2 - 1.3.1</td><td>3.4.2</td></tr>
 <tr><td>1.3.2+</td><td>3.8.0</td></tr>
 <tr><td>1.4.0</td><td>3.8.1</td></tr>
-<tr><td>1.4.1+</td><td>3.10.0</td></tr>
+<tr><td>1.4.1+</td><td>3.13.0</td></tr>
 </tbody>
 </table>
 
