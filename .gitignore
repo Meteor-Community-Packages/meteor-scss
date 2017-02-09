@@ -1,7 +1,0 @@
-
-.DS_Store
-
-meteor/
-.build*
-.idea
-.npm
