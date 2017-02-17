@@ -1,6 +1,8 @@
 # Sass for Meteor
 This is a Sass build plugin for Meteor. It compiles Sass files with node-sass and it has options to control the load order of Sass files and use Autoprefixer on the generated CSS.
 
+**Note that due to a limitation in libsass, there is no support for indented sass syntax. This syntax is deprecated and will likely not ever get supported**
+
 ## Installation
 
 Install using Meteor's package management system:
@@ -35,8 +37,6 @@ Package.onUse(function (api) {
 </table>
 
 Since `meteor 1.4.1+` (`fourseven:scss 3.9.0+`), we do not have prebuild binaries anymore. You are required to set up the [required toolchain](https://github.com/nodejs/node-gyp) yourselves.
-
-**Note that due to a bug in libsass, there is currently no support for the old, indented sass syntax**
 
 ## Usage
 Without any additional configuration after installation, this package automatically finds all `.scss` and `.sass` files in your project, compiles them with [node-sass](https://github.com/sass/node-sass), and includes the resulting CSS in the application bundle that Meteor sends to the client. The files can be anywhere in your project.
