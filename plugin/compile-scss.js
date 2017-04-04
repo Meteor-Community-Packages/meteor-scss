@@ -79,21 +79,6 @@ class SassCompiler extends MultiFileCachingCompiler {
     var totalImportPath = [];
     var sourceMapPaths = ['.'+inputFile.getDisplayPath()];
 
-    //Handle deprecation of fs.existsSYnc
-    //XXX: remove when meteor is fully on node 4+
-    function fileExists(file){
-      if(fs.statSync){
-        try{
-          fs.statSync(file);
-        }catch(e){
-          return false;
-        }
-        return true;
-      }else{
-        return fs.existsSync(file);
-      }
-    }
-
     function addUnderscore(file){
       if(!self.hasUnderscore(file)){
         file = path.join(path.dirname(file),'_'+path.basename(file));
@@ -261,4 +246,19 @@ function decodeFilePath (filePath) {
   }
 
   return 'packages/' + match[1] + '/' + match[2];
+}
+
+//Handle deprecation of fs.existsSYnc
+//XXX: remove when meteor is fully on node 4+
+function fileExists(file){
+  if(fs.statSync){
+    try{
+      fs.statSync(file);
+    }catch(e){
+      return false;
+    }
+    return true;
+  }else{
+    return fs.existsSync(file);
+  }
 }
