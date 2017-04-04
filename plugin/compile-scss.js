@@ -1,4 +1,4 @@
-import * as _ from "lodash";
+import * as _ from 'lodash';
 
 const path = Plugin.path;
 const fs = Plugin.fs;
@@ -235,6 +235,67 @@ class SassCompiler extends MultiFileCachingCompiler {
       sourceMap:  compileResult.sourceMap
     });
   }
+
+  /**
+   * If not loaded yet, load configuration and includePaths.
+   * @private
+   */
+  _prepareIncludePaths() {
+    if (typeof this._includePaths === 'undefined') {
+      const config = _loadConfigurationFile();
+
+      this._loadIncludePaths(config);
+    }
+  }
+
+  /**
+   * Extract the 'includePaths' key from specified configuration, if any, and
+   * store it into this._includePaths.
+   * @param config
+   * @private
+   */
+  _loadIncludePaths(config) {
+    // Extract includePaths, if any
+    const includePaths = config['includePaths'];
+
+    if (includePaths && _.isArray(includePaths)) {
+      this._includePaths = includePaths;
+    } else {
+      this._includePaths = [];
+    }
+  }
+}
+
+/**
+ * Read the content of 'scss-config.json' file (if any)
+ * @returns {{}}
+ * @private
+ */
+function _loadConfigurationFile() {
+  return _getConfig('scss-config.json') || {};
+}
+
+/**
+ * Build a path from current process working directory (i.e. meteor project
+ * root) and specified file name, try to get the file and parse its content.
+ * @param configFileName
+ * @returns {{}}
+ * @private
+ */
+function _getConfig(configFileName) {
+  const appdir = process.env.PWD || process.cwd();
+  const custom_config_filename = path.join(appdir, configFileName);
+  let userConfig = {};
+
+  if (fileExists(custom_config_filename)) {
+    userConfig = fs.readFileSync(custom_config_filename, {
+      encoding: 'utf8'
+    });
+    userConfig = JSON.parse(userConfig);
+  } else {
+    console.warn('Could not find configuration file at ' + custom_config_filename);
+  }
+  return userConfig;
 }
 
 function decodeFilePath (filePath) {
