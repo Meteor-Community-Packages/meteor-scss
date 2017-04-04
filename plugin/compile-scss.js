@@ -240,6 +240,24 @@ class SassCompiler extends MultiFileCachingCompiler {
 }
 
 
+function _getRealImportPathFromIncludes(importPath, getRealImportPathFn){
+
+  _prepareIncludePaths();
+
+  let possibleFilePath, foundFile;
+
+  for (let includePath of _includePaths) {
+    possibleFilePath = path.join(includePath, importPath);
+    foundFile = getRealImportPathFn(possibleFilePath);
+
+    if (foundFile) {
+      return foundFile;
+    }
+  }
+
+  return null;
+}
+
 /**
  * If not loaded yet, load configuration and includePaths.
  * @private
