@@ -128,9 +128,9 @@ class SassCompiler extends MultiFileCachingCompiler {
       }
 
       //Nothing found...
-      throw new Error(`File to import: ${rawImportPath} not found in file: ${totalImportPath[totalImportPath.length-2]}`);
+      return null;
 
-    }
+    };
 
     //Handle import statements found by the sass compiler, used to handle cross-package imports
     const importer = function(url,prev,done){
@@ -160,7 +160,16 @@ class SassCompiler extends MultiFileCachingCompiler {
       }
 
       try{
-        const parsed = getRealImportPath(importPath);
+        let parsed = getRealImportPath(importPath);
+
+        if (!parsed) {
+          parsed = _getRealImportPathFromIncludes(url, getRealImportPath);
+        }
+        if (!parsed) {
+          //Nothing found...
+          throw new Error(`File to import: ${url} not found in file: ${totalImportPath[totalImportPath.length-2]}`);
+        }
+
         if (parsed.absolute) {
           sourceMapPaths.push(parsed.path);
           done({ contents: fs.readFileSync(parsed.path, 'utf8')});
