@@ -53,6 +53,12 @@ Package.onTest(function (api) {
   //  'test/sass/dir/subdir/_in-subdir.sass']);
   //api.addFiles('test/sass/top2.sass', 'client', {isImport: true});
 
+  // Test for includePaths
+  api.addFiles([
+    'test/include-paths/include-paths.scss',
+    'test/include-paths/modules/module/_module.scss'
+  ]);
+
   api.addFiles('tests.js', 'client');
 
 });
