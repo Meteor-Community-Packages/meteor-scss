@@ -21,7 +21,7 @@ Package.onUse(function (api) {
   api.use('isobuild:compiler-plugin@1.0.0');
 });
 
-Package.on_test(function (api) {
+Package.onTest(function (api) {
   api.use(['test-helpers',
            'tinytest']);
 
