@@ -1,3 +1,5 @@
+import * as _ from "lodash";
+
 const path = Plugin.path;
 const fs = Plugin.fs;
 const sass = Npm.require('node-sass');
