@@ -6,6 +6,8 @@ const sass = Npm.require('node-sass');
 const Future = Npm.require('fibers/future');
 const files = Plugin.files;
 
+let _includePaths;
+
 
 Plugin.registerCompiler({
   extensions: ['scss', 'sass'],
@@ -235,34 +237,35 @@ class SassCompiler extends MultiFileCachingCompiler {
       sourceMap:  compileResult.sourceMap
     });
   }
+}
 
-  /**
-   * If not loaded yet, load configuration and includePaths.
-   * @private
-   */
-  _prepareIncludePaths() {
-    if (typeof this._includePaths === 'undefined') {
-      const config = _loadConfigurationFile();
 
-      this._loadIncludePaths(config);
-    }
+/**
+ * If not loaded yet, load configuration and includePaths.
+ * @private
+ */
+function _prepareIncludePaths() {
+  if (typeof _includePaths === 'undefined') {
+    const config = _loadConfigurationFile();
+
+    _loadIncludePaths(config);
   }
+}
 
-  /**
-   * Extract the 'includePaths' key from specified configuration, if any, and
-   * store it into this._includePaths.
-   * @param config
-   * @private
-   */
-  _loadIncludePaths(config) {
-    // Extract includePaths, if any
-    const includePaths = config['includePaths'];
+/**
+ * Extract the 'includePaths' key from specified configuration, if any, and
+ * store it into _includePaths.
+ * @param config
+ * @private
+ */
+function _loadIncludePaths(config) {
+  // Extract includePaths, if any
+  const includePaths = config['includePaths'];
 
-    if (includePaths && _.isArray(includePaths)) {
-      this._includePaths = includePaths;
-    } else {
-      this._includePaths = [];
-    }
+  if (includePaths && _.isArray(includePaths)) {
+    _includePaths = includePaths;
+  } else {
+    _includePaths = [];
   }
 }
 
