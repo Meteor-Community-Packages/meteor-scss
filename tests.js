@@ -32,3 +32,24 @@ Tinytest.add("sass/scss - imports", function (test) {
     document.body.removeChild(div);
   }
 });
+
+
+Tinytest.add('sass/scss - import from includePaths', function (test) {
+
+  var div = document.createElement('div');
+
+  document.body.appendChild(div);
+
+  try {
+
+    div.className = 'from-include-paths';
+
+    test.equal(getStyleProperty(div, 'border-bottom-style'), 'outset',  div.className);
+
+  } finally {
+
+    document.body.removeChild(div);
+
+  }
+
+});
