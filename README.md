@@ -93,6 +93,31 @@ Importing styles from the target app:
 }
 ```
 
+This can conveniently be used to import styles from npm modules for example:
+```scss
+@import "{}/node_modules/module-name/stylesheet";
+```
+
+#### Global include path
+
+Sometimes a 3rd party module uses import paths that assume that the compiler is
+configured with specific `includePaths` option (e.g. Ionic, Bootstrap, etc.):
+```scss
+@import "ionicons-icons"; // This file is actually placed in another npm module!
+```
+
+Create a configuration file named "`scss-config.json`" at the root of your Meteor
+project to specify include paths that the compiler should use as an extra
+possibility to resolve import paths:
+```json
+{
+  "includePaths": [
+    "{}/node_modules/ionicons/dist/scss/"
+  ]
+}
+```
+
+
 ### Sourcemaps
 These are on by default.
 
