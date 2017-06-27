@@ -1,13 +1,11 @@
 import sass from 'node-sass';
 import Future from 'fibers/future';
-import _ from 'meteor/underscore';
 
 const files = Plugin.files;
 const path = Plugin.path;
 const fs = Plugin.fs;
 
 let _includePaths;
-
 
 Plugin.registerCompiler({
   extensions: ['scss', 'sass'],
@@ -105,7 +103,10 @@ class SassCompiler extends MultiFileCachingCompiler {
       let possibleExtensions = ['scss','sass','css'];
 
       if(! importPath.match(/\.s?(a|c)ss$/)){
-        possibleExtensions = [inputFile.getExtension()].concat(_.without(possibleExtensions,inputFile.getExtension()));
+        possibleExtensions = [
+          inputFile.getExtension(),
+          ...possibleExtensions.filter(e => e !== inputFile.getExtension())
+          ]
         for(const extension of possibleExtensions){
           possibleFiles.push(importPath+'.'+extension);
         }
@@ -289,7 +290,7 @@ function _loadIncludePaths(config) {
   // Extract includePaths, if any
   const includePaths = config['includePaths'];
 
-  if (includePaths && _.isArray(includePaths)) {
+  if (includePaths && Array.isArray(includePaths)) {
     _includePaths = includePaths;
   } else {
     _includePaths = [];
@@ -323,7 +324,7 @@ function _getConfig(configFileName) {
     });
     userConfig = JSON.parse(userConfig);
   } else {
-    console.warn('Could not find configuration file at ' + custom_config_filename);
+    //console.warn('Could not find configuration file at ' + custom_config_filename);
   }
   return userConfig;
 }
@@ -331,7 +332,7 @@ function _getConfig(configFileName) {
 function decodeFilePath (filePath) {
   const match = filePath.match(/{(.*)}\/(.*)$/);
   if (! match)
-    throw new Error('Failed to decode Less path: ' + filePath);
+    throw new Error('Failed to decode sass path: ' + filePath);
 
   if (match[1] === '') {
     // app
@@ -341,8 +342,6 @@ function decodeFilePath (filePath) {
   return 'packages/' + match[1] + '/' + match[2];
 }
 
-//Handle deprecation of fs.existsSYnc
-//XXX: remove when meteor is fully on node 4+
 function fileExists(file){
   if(fs.statSync){
     try{
@@ -351,7 +350,7 @@ function fileExists(file){
       return false;
     }
     return true;
-  }else{
+  }else if(fs.existsSync){
     return fs.existsSync(file);
   }
 }
