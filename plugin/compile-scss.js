@@ -128,6 +128,16 @@ class SassCompiler extends MultiFileCachingCompiler {
         }
       }
 
+      // css files won't be in allFiles so try loading directly
+      for(const possibleFile of possibleFiles){
+        if(possibleFile.match(/\.css$/) && !isAbsolute){
+          let decodedPath = decodeFilePath(possibleFile);
+          if(fileExists(decodedPath)){
+            return {absolute:true,path:decodedPath};
+          }
+        }
+      }
+
       //Nothing found...
       return null;
 
