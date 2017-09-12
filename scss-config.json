@@ -1,5 +1,7 @@
 {
   "includePaths": [
-    "{local-test:fourseven:scss}/test/include-paths/modules/module"
-  ]
+    "{local-test:fourseven:scss}/test/include-paths/modules/module",
+    "{local-test:fourseven:scss}/test/data/"
+  ],
+  "data": "@import 'data-options.scss';"
 }
