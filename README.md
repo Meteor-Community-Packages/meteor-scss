@@ -3,6 +3,8 @@ This is a Sass build plugin for Meteor. It compiles Sass files with node-sass an
 
 **Note that due to a limitation in libsass, there is no support for indented sass syntax. This syntax is deprecated and will likely not ever get supported**
 
+**Meteor 1.7 introduced a change in how node_modules are handled, if you want to import sass from a node_module you need to symlink the package in your imports directory (more information below)**
+
 ## Installation
 
 Install using Meteor's package management system:
@@ -33,7 +35,7 @@ Package.onUse(function (api) {
 <tr><td>1.3.2+</td><td>3.8.0_1</td></tr>
 <tr><td>1.4.0</td><td>3.8.1</td></tr>
 <tr><td>1.4.1+</td><td>4.5.4</td></tr>
-<tr><td>1.6+</td><td>4.5.4</td></tr>
+<tr><td>1.6+</td><td>4.9.0</td></tr>
 </tbody>
 </table>
 
@@ -94,10 +96,22 @@ Importing styles from the target app:
 }
 ```
 
-This can conveniently be used to import styles from npm modules for example:
+This can also conveniently be used to import styles from npm modules for example:
 ```scss
 @import "{}/node_modules/module-name/stylesheet";
 ```
+
+Note that **Meteor 1.7** introduced a change so that files in `node_modules` aren't automatically compiled any more.
+This requires you to add a symlink inside the `imports` directory to the pacakge in order for compilation to work.
+E.g.
+
+```
+meteor npm install the-package
+cd imports
+ln -s ../node_modules/the-package .
+```
+
+See the [meteor changelog](https://github.com/meteor/meteor/blob/devel/History.md) for more information.
 
 #### Global include path
 

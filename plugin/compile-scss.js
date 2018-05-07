@@ -13,23 +13,23 @@ Plugin.registerCompiler({
   archMatching: 'web'
 }, () => new SassCompiler());
 
-var toPosixPath = function (p, partialPath) {
+const toPosixPath = function toPosixPath(p, partialPath) {
   // Sometimes, you can have a path like \Users\IEUser on windows, and this
   // actually means you want C:\Users\IEUser
-  if (p[0] === "\\" && (! partialPath)) {
+  if (p[0] === "\\" && (!partialPath)) {
     p = process.env.SystemDrive + p;
   }
 
   p = p.replace(/\\/g, '/');
-  if (p[1] === ':' && ! partialPath) {
+  if (p[1] === ':' && !partialPath) {
     // transform "C:/bla/bla" to "/c/bla/bla"
-    p = '/' + p[0] + p.slice(2);
+    p = `/${p[0]}${p.slice(2)}`;
   }
 
   return p;
 };
 
-var convertToStandardPath = function (osPath, partialPath) {
+const convertToStandardPath = function convertToStandardPath(osPath, partialPath) {
   if (process.platform === "win32") {
     return toPosixPath(osPath, partialPath);
   }
@@ -42,7 +42,7 @@ class SassCompiler extends MultiFileCachingCompiler {
   constructor() {
     super({
       compilerName: 'sass',
-      defaultCacheSize: 1024*1024*10
+      defaultCacheSize: 1024*1024*10,
     });
   }
 
@@ -69,8 +69,8 @@ class SassCompiler extends MultiFileCachingCompiler {
     return !this.hasUnderscore(pathInPackage);
   }
 
-  hasUnderscore(file){
-    return path.basename(file)[0] === '_';
+  hasUnderscore(file) {
+    return path.basename(file).startsWith('_');
   }
 
   compileOneFile(inputFile, allFiles) {
@@ -80,22 +80,18 @@ class SassCompiler extends MultiFileCachingCompiler {
     const self = this;
 
     var totalImportPath = [];
-    var sourceMapPaths = ['.'+inputFile.getDisplayPath()];
+    var sourceMapPaths = [`.${inputFile.getDisplayPath()}`];
 
-    function addUnderscore(file){
-      if(!self.hasUnderscore(file)){
-        file = path.join(path.dirname(file),'_'+path.basename(file));
+    function addUnderscore(file) {
+      if (!self.hasUnderscore(file)) {
+        file = path.join(path.dirname(file), `_${path.basename(file)}`);
       }
       return file;
     }
 
-    const getRealImportPath = function(importPath){
+    const getRealImportPath = function(importPath) {
       const rawImportPath = importPath;
-      var isAbsolute = false;
-
-      if(importPath[0] === '/'){
-        isAbsolute = true;
-      }
+      const isAbsolute = importPath.startsWith('/');
 
       //SASS has a whole range of possible import files from one import statement, try each of them
       const possibleFiles = [];
@@ -108,24 +104,24 @@ class SassCompiler extends MultiFileCachingCompiler {
           inputFile.getExtension(),
           ...possibleExtensions.filter(e => e !== inputFile.getExtension())
           ]
-        for(const extension of possibleExtensions){
-          possibleFiles.push(importPath+'.'+extension);
+        for (const extension of possibleExtensions){
+          possibleFiles.push(`${importPath}.${extension}`);
         }
       }else{
         possibleFiles.push(importPath);
       }
 
       //Try files prefixed with underscore
-      for(const possibleFile of possibleFiles){
-        if(! self.hasUnderscore(possibleFile)){
+      for (const possibleFile of possibleFiles) {
+        if (! self.hasUnderscore(possibleFile)) {
           possibleFiles.push(addUnderscore(possibleFile));
         }
       }
 
       //Try if one of the possible files exists
-      for(const possibleFile of possibleFiles){
-        if((isAbsolute && fileExists(possibleFile)) || (!isAbsolute && allFiles.has(possibleFile))){
-            return {absolute:isAbsolute,path:possibleFile};
+      for (const possibleFile of possibleFiles) {
+        if ((isAbsolute && fileExists(possibleFile)) || (!isAbsolute && allFiles.has(possibleFile))) {
+            return { absolute: isAbsolute, path: possibleFile };
         }
       }
 
@@ -135,21 +131,21 @@ class SassCompiler extends MultiFileCachingCompiler {
     };
 
     //Handle import statements found by the sass compiler, used to handle cross-package imports
-    const importer = function(url,prev,done){
+    const importer = function(url, prev, done) {
 
-      if(!totalImportPath.length){
+      if (!totalImportPath.length) {
         totalImportPath.push(prev);
       }
 
-      if(totalImportPath[totalImportPath.length] !== prev){
+      if (totalImportPath[totalImportPath.length] !== prev) {
         //backtracked, splice of part we don't need anymore
         // (XXX: this might give problems when multiple parts of the path have the same name)
-        totalImportPath.splice(totalImportPath.indexOf(prev)+1,totalImportPath.length);
+        totalImportPath.splice(totalImportPath.indexOf(prev) + 1, totalImportPath.length);
       }
 
-      var importPath = url;
-      for(var i = totalImportPath.length-1; i >= 0; i--){
-        if(importPath[0] === '/' || importPath[0] === '{'){
+      let importPath = url;
+      for (let i = totalImportPath.length - 1; i >= 0; i--) {
+        if (importPath.startsWith('/') || importPath.startsWith('{')) {
           break;
         }
         importPath = path.join(path.dirname(totalImportPath[i]),importPath);
@@ -157,11 +153,11 @@ class SassCompiler extends MultiFileCachingCompiler {
       totalImportPath.push(url);
 
       let accPosition = importPath.indexOf('{');
-      if(accPosition > -1){
+      if (accPosition > -1) {
         importPath = importPath.substr(accPosition,importPath.length);
       }
 
-      try{
+      try {
         let parsed = getRealImportPath(importPath);
 
         if (!parsed) {
@@ -169,18 +165,18 @@ class SassCompiler extends MultiFileCachingCompiler {
         }
         if (!parsed) {
           //Nothing found...
-          throw new Error(`File to import: ${url} not found in file: ${totalImportPath[totalImportPath.length-2]}`);
+          throw new Error(`File to import: ${url} not found in file: ${totalImportPath[totalImportPath.length - 2]}`);
         }
 
         if (parsed.absolute) {
           sourceMapPaths.push(parsed.path);
           done({ contents: fs.readFileSync(parsed.path, 'utf8')});
-        }else{
+        } else {
           referencedImportPaths.push(parsed.path);
           sourceMapPaths.push(decodeFilePath(parsed.path));
           done({ contents: allFiles.get(parsed.path).getContentsAsString()});
         }
-      }catch(e){
+      } catch (e) {
         return done(e);
       }
 
@@ -197,12 +193,12 @@ class SassCompiler extends MultiFileCachingCompiler {
       omitSourceMapUrl:  true,
       sourceMapRoot: '.',
       indentedSyntax : inputFile.getExtension() === 'sass',
-      outFile: '.'+inputFile.getBasename(),
+      outFile: `.${inputFile.getBasename()}`,
       importer: importer,
-      includePaths:      []
+      includePaths:      [],
     };
 
-    options.file  =  this.getAbsoluteImportPath(inputFile);
+    options.file = this.getAbsoluteImportPath(inputFile);
 
     options.data = inputFile.getContentsAsBuffer().toString('utf8');
 
@@ -212,10 +208,10 @@ class SassCompiler extends MultiFileCachingCompiler {
     // This is one workaround, another one would be to not set options.file, in which case the importer 'prev' will be 'stdin'
     // However, this would result in problems if a file named stdín.scss would exist.
     // Not the most elegant of solutions, but it works.
-    if(!options.data.trim()){
-      options.data = "$fakevariable : blue;"
+    if (!options.data.trim()) {
+      options.data = '$fakevariable_ae7bslvbp2yqlfba : blue;';
     } else if (typeof _data === 'string') {
-      options.data = _data.concat(options.data)
+      options.data = _data.concat(options.data);
     }
 
     let output;
@@ -239,15 +235,15 @@ class SassCompiler extends MultiFileCachingCompiler {
     }
     //End fix sourcemap references
 
-    const compileResult = {css: output.css.toString('utf-8'), sourceMap: output.map};
-    return {compileResult,referencedImportPaths};
+    const compileResult = { css: output.css.toString('utf-8'), sourceMap: output.map };
+    return { compileResult, referencedImportPaths };
   }
 
-  addCompileResult(inputFile,  compileResult) {
+  addCompileResult(inputFile, compileResult) {
     inputFile.addStylesheet({
-      data:  compileResult.css,
-      path: inputFile.getPathInPackage() + '.css',
-      sourceMap:  compileResult.sourceMap
+      data: compileResult.css,
+      path: `${inputFile.getPathInPackage()}.css`,
+      sourceMap: compileResult.sourceMap,
     });
   }
 }
@@ -336,26 +332,27 @@ function _getConfig(configFileName) {
 
 function decodeFilePath (filePath) {
   const match = filePath.match(/{(.*)}\/(.*)$/);
-  if (! match)
-    throw new Error('Failed to decode sass path: ' + filePath);
+  if (!match) {
+    throw new Error(`Failed to decode sass path: ${filePath}`);
+  }
 
   if (match[1] === '') {
     // app
     return match[2];
   }
 
-  return 'packages/' + match[1] + '/' + match[2];
+  return `packages/${match[1]}/${match[2]}`;
 }
 
-function fileExists(file){
-  if(fs.statSync){
-    try{
+function fileExists(file) {
+  if (fs.statSync){
+    try {
       fs.statSync(file);
-    }catch(e){
+    } catch (e) {
       return false;
     }
     return true;
-  }else if(fs.existsSync){
+  } else if (fs.existsSync) {
     return fs.existsSync(file);
   }
 }
