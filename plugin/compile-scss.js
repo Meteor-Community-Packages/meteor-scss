@@ -6,7 +6,6 @@ const path = Plugin.path;
 const fs = Plugin.fs;
 
 let _includePaths;
-let _data;
 
 Plugin.registerCompiler({
   extensions: ['scss', 'sass'],
@@ -210,8 +209,6 @@ class SassCompiler extends MultiFileCachingCompiler {
     // Not the most elegant of solutions, but it works.
     if (!options.data.trim()) {
       options.data = '$fakevariable_ae7bslvbp2yqlfba : blue;';
-    } else if (typeof _data === 'string') {
-      options.data = _data.concat(options.data);
     }
 
     let output;
@@ -275,9 +272,6 @@ function _prepareNodeSassOptions() {
   const config = _loadConfigurationFile();
   if (typeof _includePaths === 'undefined' && config.includePaths) {
     _loadIncludePaths(config);
-  }
-  if (typeof _data === 'undefined' && config.data) {
-    _data = config.data
   }
 }
 
