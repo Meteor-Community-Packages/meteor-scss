@@ -47,12 +47,6 @@ Package.onTest(function (api) {
     'test/include-paths/include-paths.scss',
     'test/include-paths/modules/module/_module.scss',
   ]);
-
-  // Test for data option
-  api.addFiles([
-    'test/data/data-options.scss',
-    'test/data/data.scss',
-  ]);
   
   api.addFiles('tests.js', 'client');
 

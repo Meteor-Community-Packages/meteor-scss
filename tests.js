@@ -53,23 +53,3 @@ Tinytest.add('sass/scss - import from includePaths', function (test) {
   }
 
 });
-
-Tinytest.add('sass/scss - data option of node-sass', function (test) {
-  
-  var div = document.createElement('div');
-
-  document.body.appendChild(div);
-
-  try {
-
-    div.className = 'test-data-option';
-
-    test.equal(getStyleProperty(div, 'color'), 'rgb(18, 51, 33)',  div.className);
-
-  } finally {
-
-    document.body.removeChild(div);
-
-  }
-
-});
