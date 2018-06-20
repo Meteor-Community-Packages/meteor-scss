@@ -1,10 +1,9 @@
 import sass from 'node-sass';
-import Future from 'fibers/future';
-
-const files = Plugin.files;
+import { promisify } from 'util';
 const path = Plugin.path;
 const fs = Plugin.fs;
 
+const compileSass = promisify(sass.render);
 let _includePaths;
 
 Plugin.registerCompiler({
@@ -72,24 +71,33 @@ class SassCompiler extends MultiFileCachingCompiler {
     return path.basename(file).startsWith('_');
   }
 
+  compileOneFileLater(inputFile, getResult) {
+    inputFile.addStylesheet({
+      path: inputFile.getPathInPackage(),
+    }, async () => {
+      const result = await getResult();
+      return result && {
+        data: result.css,
+        sourceMap: result.sourceMap,
+        };
+    });
+  }
+
   compileOneFile(inputFile, allFiles) {
 
     const referencedImportPaths = [];
 
-    const self = this;
-
     var totalImportPath = [];
     var sourceMapPaths = [`.${inputFile.getDisplayPath()}`];
 
-    function addUnderscore(file) {
-      if (!self.hasUnderscore(file)) {
+    const addUnderscore = (file) => {
+      if (!this.hasUnderscore(file)) {
         file = path.join(path.dirname(file), `_${path.basename(file)}`);
       }
       return file;
     }
 
-    const getRealImportPath = function(importPath) {
-      const rawImportPath = importPath;
+    const getRealImportPath = (importPath) => {
       const isAbsolute = importPath.startsWith('/');
 
       //SASS has a whole range of possible import files from one import statement, try each of them
@@ -112,7 +120,7 @@ class SassCompiler extends MultiFileCachingCompiler {
 
       //Try files prefixed with underscore
       for (const possibleFile of possibleFiles) {
-        if (! self.hasUnderscore(possibleFile)) {
+        if (! this.hasUnderscore(possibleFile)) {
           possibleFiles.push(addUnderscore(possibleFile));
         }
       }
@@ -182,8 +190,6 @@ class SassCompiler extends MultiFileCachingCompiler {
     }
 
     //Start compile sass (async)
-    const f = new Future;
-
     const options = {
       sourceMap:         true,
       sourceMapContents: true,
@@ -213,8 +219,7 @@ class SassCompiler extends MultiFileCachingCompiler {
 
     let output;
     try {
-      sass.render(options,f.resolver());
-      output = f.wait();
+      output = await compileSass(options);
     } catch (e) {
       inputFile.error({
         message: `Scss compiler error: ${e.formatted}\n`,
