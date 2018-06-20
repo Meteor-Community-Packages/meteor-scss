@@ -2,7 +2,7 @@ Tinytest.add("sass/scss - imports", function (test) {
   var div = document.createElement('div');
   document.body.appendChild(div);
 
-  var prefixes = ['scss'/*,'sass'*/];
+  var prefixes = ['scss'];
 
   try {
     var t = function (className, style) {
