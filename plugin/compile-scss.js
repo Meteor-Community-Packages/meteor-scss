@@ -59,6 +59,7 @@ class SassCompiler extends MultiFileCachingCompiler {
   // `isImport` file option in api.addFiles.
   isRoot(inputFile) {
     const fileOptions = inputFile.getFileOptions();
+
     if (fileOptions.hasOwnProperty('isImport')) {
       return !fileOptions.isImport;
     }
@@ -83,7 +84,7 @@ class SassCompiler extends MultiFileCachingCompiler {
     });
   }
 
-  compileOneFile(inputFile, allFiles) {
+  async compileOneFile(inputFile, allFiles) {
 
     const referencedImportPaths = [];
 
@@ -191,16 +192,16 @@ class SassCompiler extends MultiFileCachingCompiler {
 
     //Start compile sass (async)
     const options = {
-      sourceMap:         true,
+      sourceMap: true,
       sourceMapContents: true,
-      sourceMapEmbed:    false,
-      sourceComments:    false,
-      omitSourceMapUrl:  true,
+      sourceMapEmbed: false,
+      sourceComments: false,
+      omitSourceMapUrl: true,
       sourceMapRoot: '.',
       indentedSyntax : inputFile.getExtension() === 'sass',
       outFile: `.${inputFile.getBasename()}`,
-      importer: importer,
-      includePaths:      [],
+      importer,
+      includePaths: [],
     };
 
     options.file = this.getAbsoluteImportPath(inputFile);
