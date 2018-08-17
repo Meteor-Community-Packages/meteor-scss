@@ -53,3 +53,15 @@ Tinytest.add('sass/scss - import from includePaths', function (test) {
   }
 
 });
+
+Tinytest.add('sass/scss - read environment variables with env()', function (test) {
+  var div = document.createElement('div');
+  document.body.appendChild(div);
+
+  try {
+    div.className = 'from-env';
+    test.equal(getStyleProperty(div, 'width'), '1px', div.className);
+  } finally {
+    document.body.removeChild(div);
+  }
+});
