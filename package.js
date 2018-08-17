@@ -47,7 +47,10 @@ Package.onTest(function (api) {
     'test/include-paths/include-paths.scss',
     'test/include-paths/modules/module/_module.scss',
   ]);
-  
-  api.addFiles('tests.js', 'client');
 
+  // Tests for env()
+  process.env.FOURSEVEN_SCSS_WIDTH = '1px';
+  api.addFiles(['test/env.scss']);
+
+  api.addFiles('tests.js', 'client');
 });
