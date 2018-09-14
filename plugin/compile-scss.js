@@ -75,7 +75,6 @@ class SassCompiler extends MultiFileCachingCompiler {
   compileOneFileLater(inputFile, getResult) {
     inputFile.addStylesheet({
       path: inputFile.getPathInPackage(),
-      lazy: ! this.isRoot(inputFile),
     }, async () => {
       const result = await getResult();
       return result && {
