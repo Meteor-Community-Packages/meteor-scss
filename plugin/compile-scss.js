@@ -195,6 +195,7 @@ class SassCompiler extends MultiFileCachingCompiler {
       outFile: `.${inputFile.getBasename()}`,
       importer: importer,
       includePaths:      [],
+      precision: 10,
     };
 
     options.file = this.getAbsoluteImportPath(inputFile);
