@@ -7,7 +7,7 @@ Package.describe({
 
 Package.registerBuildPlugin({
   name: "compileScssBatch",
-  use: ['caching-compiler@1.2.0-beta171.4', 'ecmascript@0.12.0-beta171.4'],
+  use: ['caching-compiler@1.2.0', 'ecmascript@0.12.0'],
   sources: [
     'plugin/compile-scss.js'
   ],
@@ -17,7 +17,7 @@ Package.registerBuildPlugin({
 });
 
 Package.onUse(function (api) {
-  api.versionsFrom("1.7.1-beta.4");
+  api.versionsFrom("1.8");
   api.use('isobuild:compiler-plugin@1.0.0');
 });
 
