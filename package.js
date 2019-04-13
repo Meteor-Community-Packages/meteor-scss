@@ -1,29 +1,26 @@
 Package.describe({
   summary: 'Style with attitude. Sass and SCSS support for Meteor.js.',
-  version: "4.10.0",
-  git: "https://github.com/fourseven/meteor-scss.git",
-  name: "fourseven:scss"
+  version: '4.11.0',
+  git: 'https://github.com/fourseven/meteor-scss.git',
+  name: 'fourseven:scss',
 });
 
 Package.registerBuildPlugin({
-  name: "compileScssBatch",
+  name: 'compileScssBatch',
   use: ['caching-compiler@1.2.0', 'ecmascript@0.12.0'],
-  sources: [
-    'plugin/compile-scss.js'
-  ],
+  sources: ['plugin/compile-scss.js'],
   npmDependencies: {
-    'node-sass': '4.9.3'
-  }
+    'node-sass': '4.11.0',
+  },
 });
 
-Package.onUse(function (api) {
-  api.versionsFrom("1.8");
+Package.onUse(function(api) {
+  api.versionsFrom('1.8');
   api.use('isobuild:compiler-plugin@1.0.0');
 });
 
-Package.onTest(function (api) {
-  api.use(['test-helpers',
-           'tinytest']);
+Package.onTest(function(api) {
+  api.use(['test-helpers', 'tinytest']);
 
   api.use(['fourseven:scss']);
 
@@ -43,11 +40,7 @@ Package.onTest(function (api) {
   api.addFiles('test/scss/top2.scss', 'client', { isImport: true });
 
   // Test for includePaths
-  api.addFiles([
-    'test/include-paths/include-paths.scss',
-    'test/include-paths/modules/module/_module.scss',
-  ]);
-  
-  api.addFiles('tests.js', 'client');
+  api.addFiles(['test/include-paths/include-paths.scss', 'test/include-paths/modules/module/_module.scss']);
 
+  api.addFiles('tests.js', 'client');
 });
