@@ -138,27 +138,50 @@ class SassCompiler extends MultiFileCachingCompiler {
 
     };
 
+    const makeAbsolute = function(thePath) {
+      let newPath = thePath;
+      // replace ~ with {}/....
+      if (newPath.startsWith('~')) {
+        // importPath = importPath.replace('~', '{}/node_modules/');
+        newPath = newPath.replace('~', '{}/imports/ui/packages/');
+      }
+
+      // add {}/ if starts with node_modules
+      if (!newPath.startsWith('{')) {
+        if (newPath.startsWith('node_modules')) {
+          newPath = '{}/' + newPath;
+        }
+      }
+
+      return newPath;
+    }
+
     //Handle import statements found by the sass compiler, used to handle cross-package imports
     const importer = function(url, prev, done) {
 
+      let absPrev = makeAbsolute(prev);
+
       if (!totalImportPath.length) {
-        totalImportPath.push(prev);
+        totalImportPath.push(absPrev);
       }
 
-      if (totalImportPath[totalImportPath.length] !== prev) {
+      if (totalImportPath[totalImportPath.length] !== absPrev) {
         //backtracked, splice of part we don't need anymore
         // (XXX: this might give problems when multiple parts of the path have the same name)
-        totalImportPath.splice(totalImportPath.indexOf(prev) + 1, totalImportPath.length);
+        totalImportPath.splice(totalImportPath.indexOf(absPrev) + 1, totalImportPath.length);
       }
 
       let importPath = url;
+      importPath = makeAbsolute(importPath);
+      const importPathFixed = importPath;
+
       for (let i = totalImportPath.length - 1; i >= 0; i--) {
         if (importPath.startsWith('/') || importPath.startsWith('{')) {
           break;
         }
         importPath = path.join(path.dirname(totalImportPath[i]),importPath);
       }
-      totalImportPath.push(url);
+      totalImportPath.push(importPathFixed);
 
       let accPosition = importPath.indexOf('{');
       if (accPosition > -1) {
