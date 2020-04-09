@@ -138,7 +138,7 @@ class SassCompiler extends MultiFileCachingCompiler {
 
     };
 
-    const makeAbsolute = function(thePath) {
+    const fixTilde = function(thePath) {
       let newPath = thePath;
       // replace ~ with {}/....
       if (newPath.startsWith('~')) {
@@ -159,7 +159,7 @@ class SassCompiler extends MultiFileCachingCompiler {
     //Handle import statements found by the sass compiler, used to handle cross-package imports
     const importer = function(url, prev, done) {
 
-      let absPrev = makeAbsolute(prev);
+      let absPrev = fixTilde(prev);
 
       if (!totalImportPath.length) {
         totalImportPath.push(absPrev);
@@ -172,7 +172,7 @@ class SassCompiler extends MultiFileCachingCompiler {
       }
 
       let importPath = url;
-      importPath = makeAbsolute(importPath);
+      importPath = fixTilde(importPath);
       const importPathFixed = importPath;
 
       for (let i = totalImportPath.length - 1; i >= 0; i--) {
