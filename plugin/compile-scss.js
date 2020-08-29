@@ -1,10 +1,12 @@
-import sass from 'node-sass';
+import sass from 'sass';
 import { promisify } from 'util';
 const path = Plugin.path;
 const fs = Plugin.fs;
 
 const compileSass = promisify(sass.render);
 let _includePaths;
+
+const expectedExtensions = ['scss','sass','css'];
 
 Plugin.registerCompiler({
   extensions: ['scss', 'sass'],
@@ -80,7 +82,7 @@ class SassCompiler extends MultiFileCachingCompiler {
       return result && {
         data: result.css,
         sourceMap: result.sourceMap,
-        };
+      };
     });
   }
 
@@ -105,13 +107,13 @@ class SassCompiler extends MultiFileCachingCompiler {
       const possibleFiles = [];
 
       //If the referenced file has no extension, try possible extensions, starting with extension of the parent file.
-      let possibleExtensions = ['scss','sass','css'];
+      let possibleExtensions = [...expectedExtensions];
 
       if(! importPath.match(/\.s?(a|c)ss$/)){
         possibleExtensions = [
           inputFile.getExtension(),
           ...possibleExtensions.filter(e => e !== inputFile.getExtension())
-          ]
+        ]
         for (const extension of possibleExtensions){
           possibleFiles.push(`${importPath}.${extension}`);
         }
@@ -126,12 +128,27 @@ class SassCompiler extends MultiFileCachingCompiler {
         }
       }
 
+      for (const possibleFile of possibleFiles) {
+        if (!possibleFile.startsWith('./') && !possibleFile.startsWith('{}') && !isAbsolute) {
+          possibleFiles.push('./' + possibleFile);
+          possibleFiles.push('{}/' + possibleFile);
+        }
+      }
+
+      for (const possibleFile of possibleFiles) {
+        if (possibleFile.startsWith('./') && !possibleFile.startsWith('{}') && !isAbsolute) {
+          possibleFiles.push('{}/' + possibleFile.substring('./'.length));
+        }
+      }
+
       //Try if one of the possible files exists
       for (const possibleFile of possibleFiles) {
         if ((isAbsolute && fileExists(possibleFile)) || (!isAbsolute && allFiles.has(possibleFile))) {
-            return { absolute: isAbsolute, path: possibleFile };
+          return { absolute: isAbsolute, path: possibleFile };
         }
       }
+
+      console.debug('imported style not found in possible files', possibleFiles);
 
       //Nothing found...
       return null;
@@ -257,14 +274,23 @@ function _getRealImportPathFromIncludes(importPath, getRealImportPathFn){
 
   _prepareNodeSassOptions();
 
-  let possibleFilePath, foundFile;
+  let possibleFilePath, foundFile, possibleFiles = [];
+
+  if (!importPath.match(/\.s?(a|c)ss$/)) {
+    for (const extension of expectedExtensions){
+      possibleFiles.push(`${importPath}.${extension}`);
+    }
+  } else {
+    possibleFiles.push(importPath);
+  }
 
   for (let includePath of _includePaths) {
-    possibleFilePath = path.join(includePath, importPath);
-    foundFile = getRealImportPathFn(possibleFilePath);
-
-    if (foundFile) {
-      return foundFile;
+    for (let possibleFile of possibleFiles) {
+      possibleFilePath = path.join(includePath, possibleFile);
+      foundFile = getRealImportPathFn(possibleFilePath);
+      if (foundFile) {
+        return foundFile;
+      }
     }
   }
 
@@ -297,6 +323,7 @@ function _loadIncludePaths(config) {
   } else {
     _includePaths = [];
   }
+
 }
 
 /**
@@ -305,7 +332,8 @@ function _loadIncludePaths(config) {
  * @private
  */
 function _loadConfigurationFile() {
-  return _getConfig('scss-config.json') || {};
+  return _getConfig('scss-config.json') || {
+  };
 }
 
 /**
