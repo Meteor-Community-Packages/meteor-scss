@@ -10,7 +10,7 @@ Package.registerBuildPlugin({
   use: ['caching-compiler@1.2.0', 'ecmascript@0.12.0'],
   sources: ['plugin/compile-scss.js'],
   npmDependencies: {
-    'node-sass': '4.12.0',
+    'sass': '1.26.10',
   },
 });
 
