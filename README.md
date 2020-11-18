@@ -1,7 +1,7 @@
 # Sass for Meteor
-This is a Sass build plugin for Meteor. It compiles Sass files with node-sass and it has options to control the load order of Sass files and use Autoprefixer on the generated CSS.
+This is a Sass build plugin for Meteor. It compiles Sass files with node-sass.
 
-**Note that due to a limitation in libsass, there is no support for indented sass syntax. This syntax is deprecated and will likely not ever get supported**
+**Note that due to a limitation in libsass, there is no support for imports with indented syntax (sass). Indented syntax does work on the top-level. A version based on dart-sass is in the works which should remove this limitation.**
 
 **Meteor 1.7 introduced a change in how node_modules are handled, if you want to import sass from a node_module you need to symlink the package in your imports directory (more information below)**
 
