@@ -142,8 +142,7 @@ class SassCompiler extends MultiFileCachingCompiler {
       let newPath = thePath;
       // replace ~ with {}/....
       if (newPath.startsWith('~')) {
-        // importPath = importPath.replace('~', '{}/node_modules/');
-        newPath = newPath.replace('~', '{}/imports/ui/packages/');
+        newPath = newPath.replace('~', '{}/node_modules/');
       }
 
       // add {}/ if starts with node_modules
