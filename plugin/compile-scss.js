@@ -208,8 +208,7 @@ class SassCompiler extends MultiFileCachingCompiler {
       }
       
       try {
-        const isAbsolute = importPath.startsWith('/');
-        let parsed = getRealImportPath(importPath, isAbsolute);
+        let parsed = getRealImportPath(importPath);
 
         if (!parsed) {
           parsed = _getRealImportPathFromIncludes(url, getRealImportPath);
