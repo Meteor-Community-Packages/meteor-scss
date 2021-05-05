@@ -5,6 +5,7 @@ const fs = Plugin.fs;
 
 const compileSass = promisify(sass.render);
 let _includePaths;
+const rootDir = (process.env.PWD || process.cwd()) + "/";
 
 Plugin.registerCompiler({
   extensions: ['scss', 'sass'],
@@ -85,7 +86,6 @@ class SassCompiler extends MultiFileCachingCompiler {
   }
 
   async compileOneFile(inputFile, allFiles) {
-
     const referencedImportPaths = [];
 
     var totalImportPath = [];
@@ -98,8 +98,9 @@ class SassCompiler extends MultiFileCachingCompiler {
       return file;
     }
 
-    const getRealImportPath = (importPath) => {
-      const isAbsolute = importPath.startsWith('/');
+    const getRealImportPath = (importPath, isAbsolute) => {
+      //? MOVED FOR NOW
+      // const isAbsolute = importPath.startsWith('/');
 
       //SASS has a whole range of possible import files from one import statement, try each of them
       const possibleFiles = [];
@@ -126,17 +127,22 @@ class SassCompiler extends MultiFileCachingCompiler {
         }
       }
 
+      console.log("getRealImportPath -> possibleFiles", possibleFiles)
+      console.log("getRealImportPath -> isAbsolute", isAbsolute)
+
       //Try if one of the possible files exists
       for (const possibleFile of possibleFiles) {
+        console.log("fileExists(possibleFile)", possibleFile, fileExists(possibleFile))
+        console.log("allFiles.has(possibleFile)", possibleFile, allFiles.has(possibleFile))
         if ((isAbsolute && fileExists(possibleFile)) || (!isAbsolute && allFiles.has(possibleFile))) {
             return { absolute: isAbsolute, path: possibleFile };
         }
       }
-
       //Nothing found...
       return null;
 
     };
+
 
     const fixTilde = function(thePath) {
       let newPath = thePath;
@@ -150,6 +156,9 @@ class SassCompiler extends MultiFileCachingCompiler {
         if (newPath.startsWith('node_modules')) {
           newPath = '{}/' + newPath;
         }
+        if (newPath.startsWith('/node_modules')) {
+          newPath = '{}' + newPath;
+        }
       }
 
       return newPath;
@@ -158,53 +167,148 @@ class SassCompiler extends MultiFileCachingCompiler {
     //Handle import statements found by the sass compiler, used to handle cross-package imports
     const importer = function(url, prev, done) {
 
-      let absPrev = fixTilde(prev);
+      console.log("\n\n")
+      console.log("url", url)
+      console.log("rootDir", rootDir)
 
+      //? IMPORT TYPES:
+      //? Absolute imports:
+      // @import "{}/node_modules/some_package/style_file"
+      // @import "~/some_package/style_file"
+      // @import "{}/some_dirs/style_file"
+      // @import "{package-name}/some_dirs/style_file"
+      
+      //? Relative imports:
+      // @import "../(......)/../some_dirs/style_file"
+      // @import "../some_dirs/style_file"
+      // @import "./some_dirs/style_file"
+      // @import "some_dirs/style_file"
+      // @import "style_file"
+
+      prev = fixTilde(prev);
+      console.log("prev", prev)
+      // console.log("totalImportPath (a)", totalImportPath)
       if (!totalImportPath.length) {
-        totalImportPath.push(absPrev);
+        totalImportPath.push(prev);
       }
+      console.log("totalImportPath (a)", totalImportPath)
 
-      if (totalImportPath[totalImportPath.length] !== absPrev) {
-        //backtracked, splice of part we don't need anymore
-        // (XXX: this might give problems when multiple parts of the path have the same name)
-        totalImportPath.splice(totalImportPath.indexOf(absPrev) + 1, totalImportPath.length);
+      if (prev !== undefined) {
+
+        function escapeRegExp(stringToGoIntoTheRegex) {
+          return stringToGoIntoTheRegex.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+        }
+
+        prevParts = [prev]
+
+        // replace beginning rootDir with {}/
+        var regexRootDir = new RegExp("^(" + escapeRegExp(rootDir) + ")");       
+        var prevPart = prev.replace(regexRootDir, "{}/")
+        prevParts.push(prevPart)
+
+        // remove ./ and ../ at beginning of string
+        prevPart = prevPart.replace(/^(\.\/)/,"") 
+                        .replace(/^(\.\.\/)/,"")
+        prevParts.push(prevPart)
+                  
+        // replace last /_ with /
+        prevPart = prevPart.replace(/\/_(?![\S]*\/_)/, "/")
+        prevParts.push(prevPart)
+
+        // remove .scss, .sass, .css at end of string
+        prevPart = prevPart.replace(/(\.scss)$/, "")
+                        .replace(/(\.sass)$/, "")
+                        .replace(/(\.css)$/, "")
+                        
+        prevParts.push(prevPart)
+        
+        console.log("prevParts", prevParts)
+
+        // iterate backwards over totalImportPath and remove paths that don't loosely contain the prev url
+        for (let i = totalImportPath.length - 1; i >= 0; i--) {
+
+          // check if importPath contains prev or prevPart, if it doesn't, remove it. Up until we find a path that does contain it
+          
+          var isLooselyPrev = false
+          for(var j = 0; j < prevParts.length; j++) {
+            if (totalImportPath[i].endsWith(prevParts[j])) {
+              isLooselyPrev = true
+              break
+            }
+          }
+          if (isLooselyPrev) {
+            break
+          } else {
+            // remove last item (which has to be item i because we are iterating backwards)
+            totalImportPath.splice(i,1)
+          }
+        }
+
       }
+      console.log("totalImportPath (b)", totalImportPath)
+      
 
-      let importPath = url;
-      importPath = fixTilde(importPath);
-      const importPathFixed = importPath;
+      let importPath = fixTilde(url);
+      console.log("importPath (1)", importPath)
 
       for (let i = totalImportPath.length - 1; i >= 0; i--) {
         if (importPath.startsWith('/') || importPath.startsWith('{')) {
           break;
         }
+        // 'path' is the nodejs path module
         importPath = path.join(path.dirname(totalImportPath[i]),importPath);
+        console.log("importPath (for loop)", importPath)
       }
-      totalImportPath.push(importPathFixed);
+      // totalImportPath.push(importPath); //! What happens if we move this to where 'importPath' is in it's final form?
+      console.log("importPath (2)", importPath)
+
 
       let accPosition = importPath.indexOf('{');
       if (accPosition > -1) {
         importPath = importPath.substr(accPosition,importPath.length);
       }
+      console.log("importPath (3)", importPath)
 
+      // TODO: MAYBE if the importPath appended is the result after 'getRealImportPath', we might not need to do all of the above regex stuff.
+      // totalImportPath.push(importPath); //! MOVED FROM ABOVE
+
+      // TODO: This fix works.. BUT if you edit the scss/css file it doesn't recompile! Probably because of the absolute path problem
+      if (importPath.startsWith('{')) {
+        // replace {}/node_modules/ for rootDir + "node_modules/"
+        importPath = importPath.replace(/^(\{\}\/node_modules\/)/, rootDir + "node_modules/");
+        // importPath = importPath.replace('{}/node_modules/', rootDir + "node_modules/");
+        if (importPath.endsWith('.css')) {
+          // .css files aren't in allFiles. Replace {}/ for absolute path.
+          importPath = importPath.replace(/^(\{\}\/)/, rootDir)
+        }
+      }
+      //END FIX
+
+      console.log("importPath (4)", importPath)
+
+      
       try {
-        let parsed = getRealImportPath(importPath);
+        const isAbsolute = importPath.startsWith('/');
+        let parsed = getRealImportPath(importPath, isAbsolute);
 
         if (!parsed) {
           parsed = _getRealImportPathFromIncludes(url, getRealImportPath);
         }
+        console.log("parsed", parsed)
         if (!parsed) {
           //Nothing found...
           throw new Error(`File to import: ${url} not found in file: ${totalImportPath[totalImportPath.length - 2]}`);
         }
+        totalImportPath.push(parsed.path); // ! TESTING moved here, does this reduce regex stuff?
 
         if (parsed.absolute) {
           sourceMapPaths.push(parsed.path);
-          done({ contents: fs.readFileSync(parsed.path, 'utf8')});
+          done({ contents: fs.readFileSync(parsed.path, 'utf8'), file: parsed.path});
+
         } else {
           referencedImportPaths.push(parsed.path);
           sourceMapPaths.push(decodeFilePath(parsed.path));
-          done({ contents: allFiles.get(parsed.path).getContentsAsString()});
+          done({ contents: allFiles.get(parsed.path).getContentsAsString(), file: parsed.path});
         }
       } catch (e) {
         return done(e);
@@ -256,10 +360,14 @@ class SassCompiler extends MultiFileCachingCompiler {
     //Start fix sourcemap references
     if (output.map) {
       const map = JSON.parse(output.map.toString('utf-8'));
-      map.sources = sourceMapPaths;
+      map.sources = sourceMapPaths; 
+      // console.log("map.sources", map.sources)
+      // console.log("map", map)
       output.map = map;
     }
     //End fix sourcemap references
+
+    
 
     const compileResult = { css: output.css.toString('utf-8'), sourceMap: output.map };
     return { compileResult, referencedImportPaths };
@@ -368,6 +476,7 @@ function decodeFilePath (filePath) {
 }
 
 function fileExists(file) {
+  // console.log("check if file exists", file)
   if (fs.statSync){
     try {
       fs.statSync(file);
