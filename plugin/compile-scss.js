@@ -4,7 +4,7 @@ const path = Plugin.path;
 const fs = Plugin.fs;
 
 const compileSass = promisify(sass.render);
-let _includePaths;
+let _includePaths = [];
 const rootDir = (process.env.PWD || process.cwd()) + "/";
 
 Plugin.registerCompiler({
