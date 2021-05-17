@@ -5,6 +5,7 @@ const fs = Plugin.fs;
 
 const compileSass = promisify(sass.render);
 let _includePaths;
+const rootDir = (process.env.PWD || process.cwd()) + "/";
 
 Plugin.registerCompiler({
   extensions: ['scss', 'sass'],
@@ -85,7 +86,6 @@ class SassCompiler extends MultiFileCachingCompiler {
   }
 
   async compileOneFile(inputFile, allFiles) {
-
     const referencedImportPaths = [];
 
     var totalImportPath = [];
@@ -132,39 +132,81 @@ class SassCompiler extends MultiFileCachingCompiler {
             return { absolute: isAbsolute, path: possibleFile };
         }
       }
-
       //Nothing found...
       return null;
 
     };
 
+
+    const fixTilde = function(thePath) {
+      let newPath = thePath;
+      // replace ~ with {}/....
+      if (newPath.startsWith('~')) {
+        newPath = newPath.replace('~', '{}/node_modules/');
+      }
+
+      // add {}/ if starts with node_modules
+      if (!newPath.startsWith('{')) {
+        if (newPath.startsWith('node_modules')) {
+          newPath = '{}/' + newPath;
+        }
+        if (newPath.startsWith('/node_modules')) {
+          newPath = '{}' + newPath;
+        }
+      }
+
+      return newPath;
+    }
+
     //Handle import statements found by the sass compiler, used to handle cross-package imports
     const importer = function(url, prev, done) {
 
+      prev = fixTilde(prev);
       if (!totalImportPath.length) {
         totalImportPath.push(prev);
       }
 
-      if (totalImportPath[totalImportPath.length] !== prev) {
-        //backtracked, splice of part we don't need anymore
-        // (XXX: this might give problems when multiple parts of the path have the same name)
-        totalImportPath.splice(totalImportPath.indexOf(prev) + 1, totalImportPath.length);
+      if (prev !== undefined) {
+
+        // iterate backwards over totalImportPath and remove paths that don't equal the prev url
+        for (let i = totalImportPath.length - 1; i >= 0; i--) {
+
+          // check if importPath contains prev, if it doesn't, remove it. Up until we find a path that does contain it
+          if (totalImportPath[i] == prev) {
+            break
+          } else {
+            // remove last item (which has to be item i because we are iterating backwards)
+            totalImportPath.splice(i,1)
+          }
+        }
+
       }
 
-      let importPath = url;
+      let importPath = fixTilde(url);
       for (let i = totalImportPath.length - 1; i >= 0; i--) {
         if (importPath.startsWith('/') || importPath.startsWith('{')) {
           break;
         }
+        // 'path' is the nodejs path module
         importPath = path.join(path.dirname(totalImportPath[i]),importPath);
       }
-      totalImportPath.push(url);
 
       let accPosition = importPath.indexOf('{');
       if (accPosition > -1) {
         importPath = importPath.substr(accPosition,importPath.length);
       }
 
+      // TODO: This fix works.. BUT if you edit the scss/css file it doesn't recompile! Probably because of the absolute path problem
+      if (importPath.startsWith('{')) {
+        // replace {}/node_modules/ for rootDir + "node_modules/"
+        importPath = importPath.replace(/^(\{\}\/node_modules\/)/, rootDir + "node_modules/");
+        // importPath = importPath.replace('{}/node_modules/', rootDir + "node_modules/");
+        if (importPath.endsWith('.css')) {
+          // .css files aren't in allFiles. Replace {}/ for absolute path.
+          importPath = importPath.replace(/^(\{\}\/)/, rootDir)
+        }
+      }
+      
       try {
         let parsed = getRealImportPath(importPath);
 
@@ -175,14 +217,16 @@ class SassCompiler extends MultiFileCachingCompiler {
           //Nothing found...
           throw new Error(`File to import: ${url} not found in file: ${totalImportPath[totalImportPath.length - 2]}`);
         }
+        totalImportPath.push(parsed.path);
 
         if (parsed.absolute) {
           sourceMapPaths.push(parsed.path);
-          done({ contents: fs.readFileSync(parsed.path, 'utf8')});
+          done({ contents: fs.readFileSync(parsed.path, 'utf8'), file: parsed.path});
+
         } else {
           referencedImportPaths.push(parsed.path);
           sourceMapPaths.push(decodeFilePath(parsed.path));
-          done({ contents: allFiles.get(parsed.path).getContentsAsString()});
+          done({ contents: allFiles.get(parsed.path).getContentsAsString(), file: parsed.path});
         }
       } catch (e) {
         return done(e);
@@ -234,7 +278,7 @@ class SassCompiler extends MultiFileCachingCompiler {
     //Start fix sourcemap references
     if (output.map) {
       const map = JSON.parse(output.map.toString('utf-8'));
-      map.sources = sourceMapPaths;
+      map.sources = sourceMapPaths; 
       output.map = map;
     }
     //End fix sourcemap references
