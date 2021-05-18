@@ -12,30 +12,6 @@ Plugin.registerCompiler({
   archMatching: 'web'
 }, () => new SassCompiler());
 
-const toPosixPath = function toPosixPath(p, partialPath) {
-  // Sometimes, you can have a path like \Users\IEUser on windows, and this
-  // actually means you want C:\Users\IEUser
-  if (p[0] === "\\" && (!partialPath)) {
-    p = process.env.SystemDrive + p;
-  }
-
-  p = p.replace(/\\/g, '/');
-  if (p[1] === ':' && !partialPath) {
-    // transform "C:/bla/bla" to "/c/bla/bla"
-    p = `/${p[0]}${p.slice(2)}`;
-  }
-
-  return p;
-};
-
-const convertToStandardPath = function convertToStandardPath(osPath, partialPath) {
-  if (process.platform === "win32") {
-    return toPosixPath(osPath, partialPath);
-  }
-
-  return osPath;
-}
-
 // CompileResult is {css, sourceMap}.
 class SassCompiler extends MultiFileCachingCompiler {
   constructor() {
