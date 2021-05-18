@@ -4,8 +4,10 @@ const path = Plugin.path;
 const fs = Plugin.fs;
 
 const compileSass = promisify(sass.render);
-let _includePaths = [];
 const rootDir = (process.env.PWD || process.cwd()) + "/";
+
+const { includePaths } = _getConfig('scss-config.json');
+const _includePaths = Array.isArray(includePaths) ? includePaths : [];
 
 Plugin.registerCompiler({
   extensions: ['scss', 'sass'],
@@ -182,7 +184,7 @@ class SassCompiler extends MultiFileCachingCompiler {
           importPath = importPath.replace(/^(\{\}\/)/, rootDir)
         }
       }
-      
+
       try {
         let parsed = getRealImportPath(importPath);
 
@@ -254,7 +256,7 @@ class SassCompiler extends MultiFileCachingCompiler {
     //Start fix sourcemap references
     if (output.map) {
       const map = JSON.parse(output.map.toString('utf-8'));
-      map.sources = sourceMapPaths; 
+      map.sources = sourceMapPaths;
       output.map = map;
     }
     //End fix sourcemap references
@@ -272,11 +274,7 @@ class SassCompiler extends MultiFileCachingCompiler {
   }
 }
 
-
 function _getRealImportPathFromIncludes(importPath, getRealImportPathFn){
-
-  _prepareNodeSassOptions();
-
   let possibleFilePath, foundFile;
 
   for (let includePath of _includePaths) {
@@ -289,43 +287,6 @@ function _getRealImportPathFromIncludes(importPath, getRealImportPathFn){
   }
 
   return null;
-}
-
-/**
- * If not loaded yet, load configuration and includePaths.
- * @private
- */
-function _prepareNodeSassOptions() {
-  const config = _loadConfigurationFile();
-  if (typeof _includePaths === 'undefined' && config.includePaths) {
-    _loadIncludePaths(config);
-  }
-}
-
-/**
- * Extract the 'includePaths' key from specified configuration, if any, and
- * store it into _includePaths.
- * @param config
- * @private
- */
-function _loadIncludePaths(config) {
-  // Extract includePaths, if any
-  const includePaths = config['includePaths'];
-
-  if (includePaths && Array.isArray(includePaths)) {
-    _includePaths = includePaths;
-  } else {
-    _includePaths = [];
-  }
-}
-
-/**
- * Read the content of 'scss-config.json' file (if any)
- * @returns {{}}
- * @private
- */
-function _loadConfigurationFile() {
-  return _getConfig('scss-config.json') || {};
 }
 
 /**
