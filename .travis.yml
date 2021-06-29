@@ -1,6 +1,7 @@
 language: node_js
 sudo: required
 node_js:
-  - "0.10"
+  - "12"
+  - "14"
 before_install:
   - "curl -L http://git.io/ejPSng | /bin/sh"
