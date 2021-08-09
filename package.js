@@ -10,12 +10,12 @@ Package.registerBuildPlugin({
   use: ['caching-compiler@1.2.2', 'ecmascript@0.15.1'],
   sources: ['plugin/compile-scss.js'],
   npmDependencies: {
-    'node-sass': '6.0.1',
+    'node-sass': '4.14.1',
   },
 });
 
 Package.onUse(function(api) {
-  api.versionsFrom('1.9');
+  api.versionsFrom('2.3');
   api.use('isobuild:compiler-plugin@1.0.0');
 });
 
@@ -42,5 +42,5 @@ Package.onTest(function(api) {
   // Test for includePaths
   api.addFiles(['test/include-paths/include-paths.scss', 'test/include-paths/modules/module/_module.scss']);
 
-  api.addFiles('tests.js', 'client');
+  api.mainModule('tests.js', 'client');
 });
