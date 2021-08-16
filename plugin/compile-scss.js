@@ -4,8 +4,6 @@ const path = Plugin.path;
 const fs = Plugin.fs;
 
 const compileSass = promisify(sass.render);
-const rootDir = (process.env.PWD || process.cwd()) + "/";
-
 const { includePaths } = _getConfig('scss-config.json');
 const _includePaths = Array.isArray(includePaths) ? includePaths : [];
 
@@ -13,6 +11,30 @@ Plugin.registerCompiler({
   extensions: ['scss', 'sass'],
   archMatching: 'web'
 }, () => new SassCompiler());
+
+const convertToStandardPath = function convertToStandardPath(osPath) {
+  if (process.platform === "win32") {
+    // return toPosixPath(osPath, partialPath);
+    // p = osPath;
+    // Sometimes, you can have a path like \Users\IEUser on windows, and this
+    // actually means you want C:\Users\IEUser
+    if (osPath[0] === "\\") {
+      osPath = process.env.SystemDrive + osPath;
+    }
+
+    osPath = osPath.replace(/\\/g, '/');
+    if (osPath[1] === ':') {
+      // transform "C:/bla/bla" to "/c/bla/bla"
+      osPath = `/${osPath[0]}${osPath.slice(2)}`;
+    }
+
+    return osPath;
+  }
+
+  return osPath;
+}
+
+const rootDir = convertToStandardPath((process.env.PWD || process.cwd()) + "/");
 
 // CompileResult is {css, sourceMap}.
 class SassCompiler extends MultiFileCachingCompiler {
@@ -138,7 +160,7 @@ class SassCompiler extends MultiFileCachingCompiler {
 
     //Handle import statements found by the sass compiler, used to handle cross-package imports
     const importer = function(url, prev, done) {
-
+      prev = convertToStandardPath(prev);
       prev = fixTilde(prev);
       if (!totalImportPath.length) {
         totalImportPath.push(prev);
@@ -159,8 +181,8 @@ class SassCompiler extends MultiFileCachingCompiler {
         }
 
       }
-
-      let importPath = fixTilde(url);
+      let importPath = convertToStandardPath(url);
+      importPath = fixTilde(importPath);
       for (let i = totalImportPath.length - 1; i >= 0; i--) {
         if (importPath.startsWith('/') || importPath.startsWith('{')) {
           break;
@@ -187,7 +209,6 @@ class SassCompiler extends MultiFileCachingCompiler {
 
       try {
         let parsed = getRealImportPath(importPath);
-
         if (!parsed) {
           parsed = _getRealImportPathFromIncludes(url, getRealImportPath);
         }
