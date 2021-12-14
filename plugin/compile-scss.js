@@ -4,36 +4,37 @@ const path = Plugin.path;
 const fs = Plugin.fs;
 
 const compileSass = promisify(sass.render);
-let _includePaths;
+const { includePaths } = _getConfig('scss-config.json');
+const _includePaths = Array.isArray(includePaths) ? includePaths : [];
 
 Plugin.registerCompiler({
   extensions: ['scss', 'sass'],
   archMatching: 'web'
 }, () => new SassCompiler());
 
-const toPosixPath = function toPosixPath(p, partialPath) {
-  // Sometimes, you can have a path like \Users\IEUser on windows, and this
-  // actually means you want C:\Users\IEUser
-  if (p[0] === "\\" && (!partialPath)) {
-    p = process.env.SystemDrive + p;
-  }
-
-  p = p.replace(/\\/g, '/');
-  if (p[1] === ':' && !partialPath) {
-    // transform "C:/bla/bla" to "/c/bla/bla"
-    p = `/${p[0]}${p.slice(2)}`;
-  }
-
-  return p;
-};
-
-const convertToStandardPath = function convertToStandardPath(osPath, partialPath) {
+const convertToStandardPath = function convertToStandardPath(osPath) {
   if (process.platform === "win32") {
-    return toPosixPath(osPath, partialPath);
+    // return toPosixPath(osPath, partialPath);
+    // p = osPath;
+    // Sometimes, you can have a path like \Users\IEUser on windows, and this
+    // actually means you want C:\Users\IEUser
+    if (osPath[0] === "\\") {
+      osPath = process.env.SystemDrive + osPath;
+    }
+
+    osPath = osPath.replace(/\\/g, '/');
+    if (osPath[1] === ':') {
+      // transform "C:/bla/bla" to "/c/bla/bla"
+      osPath = `/${osPath[0]}${osPath.slice(2)}`;
+    }
+
+    return osPath;
   }
 
   return osPath;
 }
+
+const rootDir = convertToStandardPath((process.env.PWD || process.cwd()) + "/");
 
 // CompileResult is {css, sourceMap}.
 class SassCompiler extends MultiFileCachingCompiler {
@@ -85,7 +86,6 @@ class SassCompiler extends MultiFileCachingCompiler {
   }
 
   async compileOneFile(inputFile, allFiles) {
-
     const referencedImportPaths = [];
 
     var totalImportPath = [];
@@ -132,42 +132,83 @@ class SassCompiler extends MultiFileCachingCompiler {
             return { absolute: isAbsolute, path: possibleFile };
         }
       }
-
       //Nothing found...
       return null;
 
     };
 
+
+    const fixTilde = function(thePath) {
+      let newPath = thePath;
+      // replace ~ with {}/....
+      if (newPath.startsWith('~')) {
+        newPath = newPath.replace('~', '{}/node_modules/');
+      }
+
+      // add {}/ if starts with node_modules
+      if (!newPath.startsWith('{')) {
+        if (newPath.startsWith('node_modules')) {
+          newPath = '{}/' + newPath;
+        }
+        if (newPath.startsWith('/node_modules')) {
+          newPath = '{}' + newPath;
+        }
+      }
+
+      return newPath;
+    }
+
     //Handle import statements found by the sass compiler, used to handle cross-package imports
     const importer = function(url, prev, done) {
-
+      prev = convertToStandardPath(prev);
+      prev = fixTilde(prev);
       if (!totalImportPath.length) {
         totalImportPath.push(prev);
       }
 
-      if (totalImportPath[totalImportPath.length] !== prev) {
-        //backtracked, splice of part we don't need anymore
-        // (XXX: this might give problems when multiple parts of the path have the same name)
-        totalImportPath.splice(totalImportPath.indexOf(prev) + 1, totalImportPath.length);
-      }
+      if (prev !== undefined) {
 
-      let importPath = url;
+        // iterate backwards over totalImportPath and remove paths that don't equal the prev url
+        for (let i = totalImportPath.length - 1; i >= 0; i--) {
+
+          // check if importPath contains prev, if it doesn't, remove it. Up until we find a path that does contain it
+          if (totalImportPath[i] == prev) {
+            break
+          } else {
+            // remove last item (which has to be item i because we are iterating backwards)
+            totalImportPath.splice(i,1)
+          }
+        }
+
+      }
+      let importPath = convertToStandardPath(url);
+      importPath = fixTilde(importPath);
       for (let i = totalImportPath.length - 1; i >= 0; i--) {
         if (importPath.startsWith('/') || importPath.startsWith('{')) {
           break;
         }
+        // 'path' is the nodejs path module
         importPath = path.join(path.dirname(totalImportPath[i]),importPath);
       }
-      totalImportPath.push(url);
 
       let accPosition = importPath.indexOf('{');
       if (accPosition > -1) {
         importPath = importPath.substr(accPosition,importPath.length);
       }
 
+      // TODO: This fix works.. BUT if you edit the scss/css file it doesn't recompile! Probably because of the absolute path problem
+      if (importPath.startsWith('{')) {
+        // replace {}/node_modules/ for rootDir + "node_modules/"
+        importPath = importPath.replace(/^(\{\}\/node_modules\/)/, rootDir + "node_modules/");
+        // importPath = importPath.replace('{}/node_modules/', rootDir + "node_modules/");
+        if (importPath.endsWith('.css')) {
+          // .css files aren't in allFiles. Replace {}/ for absolute path.
+          importPath = importPath.replace(/^(\{\}\/)/, rootDir)
+        }
+      }
+
       try {
         let parsed = getRealImportPath(importPath);
-
         if (!parsed) {
           parsed = _getRealImportPathFromIncludes(url, getRealImportPath);
         }
@@ -175,14 +216,16 @@ class SassCompiler extends MultiFileCachingCompiler {
           //Nothing found...
           throw new Error(`File to import: ${url} not found in file: ${totalImportPath[totalImportPath.length - 2]}`);
         }
+        totalImportPath.push(parsed.path);
 
         if (parsed.absolute) {
           sourceMapPaths.push(parsed.path);
-          done({ contents: fs.readFileSync(parsed.path, 'utf8')});
+          done({ contents: fs.readFileSync(parsed.path, 'utf8'), file: parsed.path});
+
         } else {
           referencedImportPaths.push(parsed.path);
           sourceMapPaths.push(decodeFilePath(parsed.path));
-          done({ contents: allFiles.get(parsed.path).getContentsAsString()});
+          done({ contents: allFiles.get(parsed.path).getContentsAsString(), file: parsed.path});
         }
       } catch (e) {
         return done(e);
@@ -252,11 +295,7 @@ class SassCompiler extends MultiFileCachingCompiler {
   }
 }
 
-
 function _getRealImportPathFromIncludes(importPath, getRealImportPathFn){
-
-  _prepareNodeSassOptions();
-
   let possibleFilePath, foundFile;
 
   for (let includePath of _includePaths) {
@@ -269,43 +308,6 @@ function _getRealImportPathFromIncludes(importPath, getRealImportPathFn){
   }
 
   return null;
-}
-
-/**
- * If not loaded yet, load configuration and includePaths.
- * @private
- */
-function _prepareNodeSassOptions() {
-  const config = _loadConfigurationFile();
-  if (typeof _includePaths === 'undefined' && config.includePaths) {
-    _loadIncludePaths(config);
-  }
-}
-
-/**
- * Extract the 'includePaths' key from specified configuration, if any, and
- * store it into _includePaths.
- * @param config
- * @private
- */
-function _loadIncludePaths(config) {
-  // Extract includePaths, if any
-  const includePaths = config['includePaths'];
-
-  if (includePaths && Array.isArray(includePaths)) {
-    _includePaths = includePaths;
-  } else {
-    _includePaths = [];
-  }
-}
-
-/**
- * Read the content of 'scss-config.json' file (if any)
- * @returns {{}}
- * @private
- */
-function _loadConfigurationFile() {
-  return _getConfig('scss-config.json') || {};
 }
 
 /**
