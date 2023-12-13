@@ -7,7 +7,7 @@ Package.describe({
 
 Package.registerBuildPlugin({
   name: 'compileScssBatch',
-  use: ['caching-compiler@1.2.2', 'ecmascript@0.15.1'],
+  use: ['caching-compiler@1.2.2 || 2.0.0', 'ecmascript@0.15.1'],
   sources: ['plugin/compile-scss.js'],
   npmDependencies: {
     'node-sass': '8.0.0',
