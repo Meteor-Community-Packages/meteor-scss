@@ -1,42 +1,23 @@
-import sass from 'node-sass';
-import { promisify } from 'util';
-const path = Plugin.path;
-const fs = Plugin.fs;
+import sass from 'sass'
+const path = Plugin.path
+const fs = Plugin.fs
 
-const compileSass = promisify(sass.render);
-const { includePaths } = _getConfig('scss-config.json');
-const _includePaths = Array.isArray(includePaths) ? includePaths : [];
+const { includePaths } = _getConfig('scss-config.json')
+const _includePaths = Array.isArray(includePaths) ? includePaths : []
 
 Plugin.registerCompiler({
   extensions: ['scss', 'sass'],
   archMatching: 'web'
-}, () => new SassCompiler());
+}, () => new SassCompiler())
 
 const convertToStandardPath = function convertToStandardPath(osPath) {
-  if (process.platform === "win32") {
-    // return toPosixPath(osPath, partialPath);
-    // p = osPath;
-    // Sometimes, you can have a path like \Users\IEUser on windows, and this
-    // actually means you want C:\Users\IEUser
-    if (osPath[0] === "\\") {
-      osPath = process.env.SystemDrive + osPath;
-    }
-
-    osPath = osPath.replace(/\\/g, '/');
-    if (osPath[1] === ':') {
-      // transform "C:/bla/bla" to "/c/bla/bla"
-      osPath = `/${osPath[0]}${osPath.slice(2)}`;
-    }
-
-    return osPath;
-  }
-
-  return osPath;
+  return osPath
 }
 
-const rootDir = convertToStandardPath((process.env.PWD || process.cwd()) + "/");
+const rootDir = convertToStandardPath((process.env.PWD || process.cwd()) + '/')
 
 // CompileResult is {css, sourceMap}.
+// eslint-disable-next-line no-undef
 class SassCompiler extends MultiFileCachingCompiler {
   constructor() {
     super({
@@ -50,8 +31,8 @@ class SassCompiler extends MultiFileCachingCompiler {
   }
 
   compileResultSize(compileResult) {
-    return compileResult.css.length +
-      this.sourceMapSize(compileResult.sourceMap);
+    return compileResult.css?.length +
+      this.sourceMapSize(compileResult.sourceMap)
   }
 
   // The heuristic is that a file is an import (ie, is not itself processed as a
@@ -111,7 +92,7 @@ class SassCompiler extends MultiFileCachingCompiler {
         possibleExtensions = [
           inputFile.getExtension(),
           ...possibleExtensions.filter(e => e !== inputFile.getExtension())
-          ]
+        ]
         for (const extension of possibleExtensions){
           possibleFiles.push(`${importPath}.${extension}`);
         }
@@ -129,7 +110,7 @@ class SassCompiler extends MultiFileCachingCompiler {
       //Try if one of the possible files exists
       for (const possibleFile of possibleFiles) {
         if ((isAbsolute && fileExists(possibleFile)) || (!isAbsolute && allFiles.has(possibleFile))) {
-            return { absolute: isAbsolute, path: possibleFile };
+          return { absolute: isAbsolute, path: possibleFile };
         }
       }
       //Nothing found...
@@ -154,7 +135,7 @@ class SassCompiler extends MultiFileCachingCompiler {
           newPath = '{}' + newPath;
         }
       }
-
+      
       return newPath;
     }
 
@@ -172,7 +153,7 @@ class SassCompiler extends MultiFileCachingCompiler {
         for (let i = totalImportPath.length - 1; i >= 0; i--) {
 
           // check if importPath contains prev, if it doesn't, remove it. Up until we find a path that does contain it
-          if (totalImportPath[i] == prev) {
+          if (totalImportPath[i] === prev) {
             break
           } else {
             // remove last item (which has to be item i because we are iterating backwards)
@@ -248,42 +229,42 @@ class SassCompiler extends MultiFileCachingCompiler {
       precision: 10,
     };
 
-    options.file = this.getAbsoluteImportPath(inputFile);
+    options.file = this.getAbsoluteImportPath(inputFile)
 
-    options.data = inputFile.getContentsAsBuffer().toString('utf8');
+    options.data = inputFile.getContentsAsBuffer().toString('utf8')
 
-    //If the file is empty, options.data is an empty string
+    // If the file is empty, options.data is an empty string
     // In that case options.file will be used by node-sass,
     // which it can not read since it will contain a meteor package or app reference '{}'
     // This is one workaround, another one would be to not set options.file, in which case the importer 'prev' will be 'stdin'
     // However, this would result in problems if a file named stdín.scss would exist.
     // Not the most elegant of solutions, but it works.
     if (!options.data.trim()) {
-      options.data = '$fakevariable_ae7bslvbp2yqlfba : blue;';
+      options.data = '$fakevariable_ae7bslvbp2yqlfba : blue'
     }
 
-    let output;
-    try {
-      output = await compileSass(options);
-    } catch (e) {
+    const output = sass.compile(inputFile.getPathInPackage(), options)
+    // End compile sass
+
+    // Start fix sourcemap references
+    if (output.map) {
+      const map = JSON.parse(output.map.toString('utf-8'))
+      map.sources = sourceMapPaths
+      output.map = map
+    }
+    // End fix sourcemap references
+
+    const compileResult = { css: output.css?.toString('utf-8'), sourceMap: output?.map }
+    return { compileResult, referencedImportPaths }
+    /*
+    .catch(e => {
       inputFile.error({
         message: `Scss compiler error: ${e.formatted}\n`,
         sourcePath: inputFile.getDisplayPath()
-      });
-      return null;
-    }
-    //End compile sass
-
-    //Start fix sourcemap references
-    if (output.map) {
-      const map = JSON.parse(output.map.toString('utf-8'));
-      map.sources = sourceMapPaths;
-      output.map = map;
-    }
-    //End fix sourcemap references
-
-    const compileResult = { css: output.css.toString('utf-8'), sourceMap: output.map };
-    return { compileResult, referencedImportPaths };
+      })
+      return null
+    })
+     */
   }
 
   addCompileResult(inputFile, compileResult) {

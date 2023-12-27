@@ -7,17 +7,20 @@ Package.describe({
 
 Package.registerBuildPlugin({
   name: 'compileScssBatch',
-  use: ['caching-compiler@1.2.2 || 2.0.0', 'ecmascript@0.15.1'],
+  use: [
+    'caching-compiler@2.0.0-alpha300.15',
+    'ecmascript@0.16.1'
+  ],
   sources: ['plugin/compile-scss.js'],
   npmDependencies: {
-    'node-sass': '4.14.1',
-  },
-});
+    sass: '1.69.5'
+  }
+})
 
-Package.onUse(function(api) {
-  api.versionsFrom('2.3');
-  api.use('isobuild:compiler-plugin@1.0.0');
-});
+Package.onUse(api => {
+  api.versionsFrom(['2.12', '3.0-alpha.13'])
+  api.use('isobuild:compiler-plugin@1.0.0')
+})
 
 Package.onTest(function(api) {
   api.use(['test-helpers', 'tinytest']);
