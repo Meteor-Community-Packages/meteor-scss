@@ -1,4 +1,4 @@
-import sass from 'node-sass';
+import sass from 'sass';
 import { promisify } from 'util';
 const path = Plugin.path;
 const fs = Plugin.fs;
