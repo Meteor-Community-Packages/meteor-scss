@@ -16,12 +16,12 @@ Package.registerBuildPlugin({
 });
 
 Package.onUse(function(api) {
-  api.versionsFrom(['3.0.1']);
+  api.versionsFrom(['2.8.0', '3.0.1']);
   api.use('isobuild:compiler-plugin@1.0.0');
 });
 
 Package.onTest(function(api) {
-  api.versionsFrom(['3.0.1']);
+  api.versionsFrom(['2.8.0', '3.0.1']);
   api.use(['test-helpers', 'tinytest']);
 
   api.use(['fourseven:scss']);
