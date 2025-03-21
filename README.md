@@ -25,6 +25,7 @@ Package.onUse(function (api) {
 ```
 
 ## Compatibility
+
 <table>
 <thead>
 <tr><th>Meteor Version</th><th>Recommended fourseven:scss version</th></tr>
@@ -36,6 +37,7 @@ Package.onUse(function (api) {
 <tr><td>1.4.0</td><td>3.8.1</td></tr>
 <tr><td>1.4.1+</td><td>4.5.4</td></tr>
 <tr><td>1.6+</td><td>4.12.0</td></tr>
+<tr><td>3.0+</td><td>4.17.0</td></tr>
 </tbody>
 </table>
 
@@ -132,7 +134,6 @@ possibility to resolve import paths:
 }
 ```
 
-
 ### Sourcemaps
 These are on by default.
 
@@ -149,6 +150,15 @@ In a Meteor 1.3+ project, do the same by running:
 meteor remove standard-minifier-css
 meteor add seba:minifiers-autoprefixer
 ```
+
+In a Meteor 3+ project prefixes supported via postcss:
+```
+meteor remove seba:minifiers-autoprefixer
+meteor add standard-minifier-css
+meteor npm install -D postcss postcss-load-config autoprefixer
+```
+
+Learn more about [`standard-minifier-css` setup in `meteor@^3` in its docs](https://docs.meteor.com/packages/standard-minifier-css.html)
 
 ## LibSass vs Ruby Sass
 Please note that this project uses [LibSass](https://github.com/hcatlin/libsass). LibSass is a C++ implementation of the Ruby Sass compiler. It has most of the features of the Ruby version, but not all of them. Things are improving, so please be patient. Before you ask, I have no intention of making a version of this package that links to the Ruby version instead.
